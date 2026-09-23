@@ -1,8 +1,8 @@
-# Exploiter MeetLoom
+# Operating MeetLoom
 
-Ce guide complète [l’installation](deployment.md). Les exemples utilisent le namespace dev `meetloom-dev`. Pour la production, remplacer explicitement ce nom par `meetloom-prod`. Les commandes sont exécutées par l’opérateur, jamais par la CI. Les fichiers d’ingénierie s’inspirent de l’[audit RetroGemini](engineering-reference.md), avec une première version volontairement limitée à un pod applicatif.
+This guide complements [installation](deployment.md). Examples use the development namespace `meetloom-dev`. For production, explicitly replace it with `meetloom-prod`. Commands are run by the operator, never by CI. Engineering files draw on the [RetroGemini audit](engineering-reference.md), with the first version intentionally limited to one application pod.
 
-## Contrôler l’installation
+## Check the installation
 
 ```bash
 oc -n meetloom-dev get deployments,pods,svc,route,pvc
@@ -11,21 +11,21 @@ oc -n meetloom-dev logs deployment/meetloom --tail=100
 oc -n meetloom-dev exec deployment/meetloom -- node -e "fetch('http://127.0.0.1:3000/api/ready').then(async r=>{console.log(r.status);process.exit(r.ok?0:1)})"
 ```
 
-`/api/health` indique que le processus répond. `/api/ready` contrôle la disponibilité de la base. La readiness ne doit pas dépendre du LLM facultatif : une interruption Qwen ne doit pas retirer l’application du réseau. Les journaux ne doivent pas être utilisés comme stockage des prompts ou des contenus privés des réunions.
+`/api/health` confirms that the process responds. `/api/ready` checks database availability. Readiness must not depend on the optional LLM: a Qwen outage must not remove the application from service. Do not use logs to store prompts or private meeting content.
 
-| Symptôme                    | Vérification                                                                             |
-| --------------------------- | ---------------------------------------------------------------------------------------- |
-| `ImagePullBackOff`          | Référence d’image publiée, accès au registre et pull secret du ServiceAccount            |
-| PVC `Pending`               | Classe de stockage par défaut, quota et capacité disponibles                             |
-| Pod rejeté par une SCC      | Absence d’UID ajouté manuellement, politique non privilégiée et image PostgreSQL adaptée |
-| Cookie/session refusé       | HTTPS, `APP_ORIGIN` exacte, Route, et nombre de proxys de confiance                      |
-| Readiness en échec          | Logs de l’application/base, `DATABASE_URL`, DNS et réseau PostgreSQL                     |
-| IA absente                  | `QWEN_BASE_URL` et `QWEN_MODEL` dans le ConfigMap, redémarrage après modification        |
-| Erreur de certificat du LLM | CA interne montée et `NODE_EXTRA_CA_CERTS`, sans désactiver TLS                          |
+| Symptom                 | Check                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| `ImagePullBackOff`      | Published image reference, registry access, and ServiceAccount pull secret    |
+| PVC `Pending`           | Default storage class, quota, and available capacity                          |
+| Pod rejected by an SCC  | No manually added UID, unprivileged policy, and a compatible PostgreSQL image |
+| Cookie/session rejected | HTTPS, exact `APP_ORIGIN`, Route, and trusted proxy count                     |
+| Readiness failure       | Application/database logs, `DATABASE_URL`, DNS, and PostgreSQL network access |
+| AI unavailable          | `QWEN_BASE_URL` and `QWEN_MODEL` in the ConfigMap, restart after changes      |
+| LLM certificate error   | Mounted internal CA and `NODE_EXTRA_CA_CERTS`, without disabling TLS          |
 
-## Sauvegarder et restaurer
+## Back up and restore
 
-Pour PostgreSQL géré, utiliser le mécanisme de sauvegarde de la plateforme avec un test régulier de restauration. Pour la base embarquée, une sauvegarde logique peut être extraite ainsi depuis Bash :
+For managed PostgreSQL, use the platform's backup mechanism and regularly test restoration. For the bundled database, a logical backup can be extracted from Bash as follows:
 
 ```bash
 PG_POD=$(oc -n meetloom-dev get pod -l app.kubernetes.io/name=meetloom-postgresql -o jsonpath='{.items[0].metadata.name}')
@@ -34,65 +34,65 @@ oc -n meetloom-dev cp "$PG_POD:/tmp/meetloom.dump" ./meetloom.dump
 oc -n meetloom-dev exec "$PG_POD" -- rm -f /tmp/meetloom.dump
 ```
 
-Conserver la copie en dehors du cluster et appliquer les règles de rétention de l’organisation. Le dump contient les agendas, les comptes et des données privées ; le chiffrer et restreindre son accès. `oc cp` requiert l’outil `tar` dans l’image de la base ; s’il est absent, utiliser l’outillage de sauvegarde de la plateforme. Conserver également la version/digest de l’image et les paramètres nécessaires à la restauration, avec les secrets dans le gestionnaire de secrets.
+Keep the copy outside the cluster and apply your organization's retention rules. The dump contains agendas, accounts, and private data; encrypt it and restrict access. `oc cp` requires `tar` in the database image; if unavailable, use the platform's backup tooling. Also retain the image version/digest and settings needed for restoration, with secrets in your secrets manager.
 
-Tester d’abord une restauration dans un projet distinct. Préparer une base vide compatible, copier le dump dans son pod puis utiliser `pg_restore --no-owner` avec son utilisateur et sa base. Vérifier la connexion, plusieurs agendas, les permissions et les liens partagés. Une restauration dans une base en service implique une procédure d’arrêt et de remplacement des données qui doit être planifiée, pas un simple redéploiement de manifests.
+Test restoration in a separate project first. Prepare a compatible empty database, copy the dump into its pod, then use `pg_restore --no-owner` with its user and database. Check sign-in, several agendas, permissions, and shared links. Restoring into a live database requires a planned shutdown and data replacement procedure, not simply reapplying manifests.
 
-Pour SQLite local, arrêter l’application avant de copier `meetloom.sqlite` et ses éventuels fichiers WAL/SHM, ou utiliser l’API de sauvegarde SQLite. Copier uniquement le fichier principal pendant une écriture n’est pas une procédure de sauvegarde fiable. Le volume Docker persistant ne remplace pas une sauvegarde externe.
+For local SQLite, stop the application before copying `meetloom.sqlite` and any WAL/SHM files, or use the SQLite backup API. Copying only the main file during a write is not a reliable backup procedure. A persistent Docker volume does not replace an external backup.
 
-## Mettre à jour et revenir en arrière
+## Update and roll back
 
-1. Relever l’image actuellement déployée avec `oc -n meetloom-dev get deployment meetloom -o jsonpath='{.spec.template.spec.containers[0].image}'`.
-2. Faire une sauvegarde et lire les éventuelles instructions de migration.
-3. Changer uniquement l’image du conteneur `app` dans le Deployment `meetloom`, dans la console ou avec `oc set image`. Secrets, configuration et PVC sont préservés. Si les manifests changent dans cette release, relancer son installateur en indiquant la nouvelle image.
-4. Vérifier la readiness, puis connexion, ouverture d’agenda, lien visiteur et minuteur dans le navigateur.
+1. Record the current image with `oc -n meetloom-dev get deployment meetloom -o jsonpath='{.spec.template.spec.containers[0].image}'`.
+2. Take a backup and read any migration instructions.
+3. Change only the `app` container image in the `meetloom` Deployment, through the console or `oc set image`. Secrets, configuration, and the PVC are preserved. If the release changes manifests, rerun its installer with the new image.
+4. Check readiness, then sign-in, agenda opening, a visitor link, and the timer in a browser.
 
-Si la version est incompatible, remettre l’image précédente avec `oc set image` ou dans la console. Une image plus ancienne ne peut pas forcément lire un schéma migré : le retour arrière de données exige alors la sauvegarde et la procédure de migration correspondante. La V1 utilise `Recreate` ; annoncer une courte interruption aux organisateurs avant mise à jour.
+If the version is incompatible, restore the previous image with `oc set image` or the console. An older image may not be able to read a migrated schema: data rollback then requires the backup and corresponding migration procedure. V1 uses `Recreate`; announce a short interruption to organizers before updating.
 
-Modifier le Secret de mot de passe PostgreSQL ne constitue pas une rotation complète. Le mot de passe doit aussi être modifié dans PostgreSQL, puis dans la chaîne `DATABASE_URL`, de façon coordonnée. Les Secrets/ConfigMaps étant injectés comme variables d’environnement, appliquer leur changement ne suffit pas : redémarrer les pods concernés. L’installateur ne réalise pas de rotation implicite.
+Editing the PostgreSQL password Secret is not a complete rotation. Change the password in PostgreSQL and then in `DATABASE_URL` as a coordinated operation. Secrets/ConfigMaps are injected as environment variables, so applying their changes is insufficient: restart affected pods. The installer never performs an implicit rotation.
 
-## Réseau et données privées
+## Network and private data
 
-La Route termine TLS et redirige HTTP vers HTTPS. Le réseau Route-vers-pod dépend de la politique de la plateforme ; si un chiffrement de bout en bout est exigé, préparer un overlay avec terminaison réencryptée et certificats serveur.
+The Route terminates TLS and redirects HTTP to HTTPS. Route-to-pod networking depends on platform policy; if end-to-end encryption is required, prepare an overlay with re-encrypt termination and server certificates.
 
-Le fichier `k8s/optional/database-networkpolicy.yaml` n’est pas appliqué automatiquement. Il limite l’ingress PostgreSQL aux pods de l’application dans le namespace, à condition qu’aucune autre NetworkPolicy n’accorde déjà un accès plus large. Avant utilisation :
+`k8s/optional/database-networkpolicy.yaml` is not applied automatically. It restricts PostgreSQL ingress to application pods in the namespace, provided no other NetworkPolicy already grants broader access. Before using it:
 
 ```bash
 oc -n meetloom-dev get networkpolicy -o yaml
 oc -n meetloom-dev apply -f k8s/optional/database-networkpolicy.yaml
 ```
 
-Puis vérifier qu’un pod applicatif accède à la base et qu’un pod sans le label de l’application n’y accède pas, avec une image de diagnostic autorisée par l’organisation. Une simple présence de NetworkPolicy ne prouve pas l’isolement. Les accès sortants au LLM, à PostgreSQL externe et au DNS doivent être préservés par les règles réseau de la plateforme.
+Then verify that an application pod can reach the database and a pod without the application label cannot, using a diagnostic image approved by your organization. A NetworkPolicy's presence alone does not prove isolation. Platform network rules must preserve outbound access to the LLM, external PostgreSQL, and DNS.
 
-Le partage visiteur doit être considéré comme un accès de lecture à toute personne possédant le lien. Révoquer les liens devenus inutiles. La confidentialité des colonnes est appliquée sur les projections serveur ; un export ou une vue de présentation publique ne doit jamais récupérer les champs organisateurs cachés.
+Treat visitor sharing as read access for anyone holding the link. Revoke links that are no longer needed. Column privacy is enforced through server projections; an export or public presentation view must never retrieve hidden organizer fields.
 
-## Conservation, clôture et services facultatifs
+## Retention, closure, and optional services
 
-L’archivage organise le tableau de bord sans retirer les accès existants. La clôture rend l’agenda non modifiable et ferme les contributions publiques ; la suppression retire immédiatement l’accès aux visiteurs et collaborateurs, puis conserve une séance restaurable pendant 30 jours. Les éléments supprimés d’un agenda sont restaurables pendant 72 heures. La purge des séances expirées est effectuée par lots bornés lorsque la corbeille est consultée ou utilisée ; ce n’est pas un traitement planifié à la seconde près. Les copies présentes dans les sauvegardes suivent leur propre rétention. Voir le [guide espaces, historique et cycle de vie](workspaces-and-lifecycle.md).
+Archiving organizes the dashboard without removing existing access. Closing makes the agenda read-only and closes public contributions; deleting immediately removes visitor and collaborator access while retaining a recoverable session for 30 days. Deleted agenda items remain recoverable for 72 hours. Expired sessions are purged in bounded batches when the trash is viewed or used; this is not a precisely scheduled background purge. Copies in backups follow their own retention policy. See the [workspace, history, and lifecycle guide](workspaces-and-lifecycle.md).
 
-Les migrations additives s’exécutent au démarrage avant la disponibilité du serveur. Une sauvegarde et sa restauration vérifiée restent nécessaires avant toute mise à jour du schéma. Le journal et les versions font partie de la base : préserver PostgreSQL préserve aussi les droits, les invitations, les liens de partage, les formulaires et les conversations IA. Ne pas réinitialiser la base pour mettre à jour l’application.
+Additive migrations run at startup before the server becomes available. A backup and verified restoration remain necessary before schema updates. The log and versions are part of the database: preserving PostgreSQL also preserves permissions, invitations, sharing links, forms, and AI conversations. Do not reset the database to update the application.
 
-Si OIDC ou SMTP est activé, ajouter leurs destinations aux règles réseau sortantes de la plateforme et conserver leurs secrets hors Git. Tester une connexion OIDC, une récupération de compte et un envoi de test après rotation des identifiants. Les rappels et résumés email sont facultatifs et soumis aux préférences des utilisateurs ; le processus applicatif les traite, ce qui renforce la limite actuelle d’un seul pod. Le [guide des services](services-auth-mail.md) décrit leurs variables, politiques d’accès et comportements en cas d’absence.
+When OIDC or SMTP is enabled, add their destinations to the platform's outbound network rules and keep credentials out of Git. Test OIDC sign-in, account recovery, and a test email after rotating credentials. Email reminders and digests are optional and follow user preferences; the application process handles them, reinforcing the current single-pod limit. The [services guide](services-auth-mail.md) documents variables, access policies, and behavior when services are absent.
 
-## CI et publication sur GitHub
+## CI and GitHub publication
 
-Les workflows définissent :
+The workflows define:
 
-- **CI Success** : agrégation du typage, des tests SQLite et PostgreSQL, du build, de l’audit des dépendances et du rendu des manifests ;
-- **CodeQL** : analyse de sécurité du code, sur PR et périodiquement ;
-- **Container scan** : démarrage de l’image avec UID arbitraire et racine en lecture seule, puis scan Trivy bloquant sur les vulnérabilités élevées/critiques corrigibles ;
-- **Release GitHub and Docker Hub** : une Release GitHub publiée ou un lancement manuel depuis `main` déclenche typage, tests SQLite/PostgreSQL, build, audit et scan ; l’image versionnée est publiée sur Docker Hub, avec SBOM, digest et archive OpenShift attachés à la Release.
+- **CI Success**: aggregates type checks, SQLite and PostgreSQL tests, the build, dependency audit, and manifest rendering;
+- **CodeQL**: code security analysis on PRs and on a schedule;
+- **Container scan**: starts the image with an arbitrary UID and read-only root filesystem, then runs Trivy, blocking on fixable high/critical vulnerabilities;
+- **Release GitHub and Docker Hub**: a published GitHub Release or manual run from `main` triggers type checks, SQLite/PostgreSQL tests, build, audit, and scan; the versioned image is published to Docker Hub, with an SBOM, digest, and OpenShift archive attached to the Release.
 
-Configurer les protections/rulesets GitHub pour exiger `CI Success`, `CodeQL` et `Container scan`, interdire les pushes directs non prévus et exiger la résolution des discussions. Les noms exacts affichés peuvent inclure le workflow ; sélectionner les checks réellement produits par le premier run. Un fichier YAML ne configure pas lui-même ces protections. CodeQL doit être disponible sur le dépôt ; s’il devient privé dans une organisation, vérifier ses droits/licences avant migration. Les coûts éventuels de runner, registre et infrastructure dépendent de l’hébergement choisi ; l’application n’ajoute pas de service SaaS obligatoire.
+Configure GitHub branch protections/rulesets to require `CI Success`, `CodeQL`, and `Container scan`, prohibit unintended direct pushes, and require resolved discussions. Exact displayed names may include the workflow; select checks actually produced by the first run. A YAML file does not configure these protections itself. CodeQL must be available for the repository; if it becomes private within an organization, check permissions/licensing before migration. Any runner, registry, and infrastructure costs depend on the chosen hosting; the application introduces no mandatory SaaS service.
 
-Pour bloquer aussi une PR sur les alertes CodeQL, configurer la règle GitHub **Require code scanning results** avec l’outil CodeQL et le seuil de sévérité retenu. La réussite du job d’analyse ne signifie pas qu’aucune alerte n’a été trouvée. Les résultats Trivy sont également envoyés au tableau Security en SARIF. Activer les alertes Dependabot, les mises à jour de sécurité et, si disponible, la protection contre les secrets poussés. [Protection de fusion par code scanning](https://docs.github.com/en/code-security/how-tos/find-and-fix-code-vulnerabilities/manage-your-configuration/set-merge-protection).
+To also block PRs on CodeQL alerts, configure GitHub's **Require code scanning results** rule with CodeQL and the selected severity threshold. A successful analysis job does not mean no alerts were found. Trivy results are also uploaded to Security as SARIF. Enable Dependabot alerts, security updates, and secret push protection when available. See [code scanning merge protection](https://docs.github.com/en/code-security/how-tos/find-and-fix-code-vulnerabilities/manage-your-configuration/set-merge-protection).
 
-Dependabot ouvre les mises à jour npm, GitHub Actions et Docker. Les actions sont épinglées par SHA ; leurs mises à jour passent donc par une PR. **L’auto-merge est absent en V1**, conformément à l’ordre demandé : stabiliser et valider le produit, puis ajouter les tests E2E.
+Dependabot opens npm, GitHub Actions, and Docker updates. Actions are pinned by SHA, so updates pass through a PR. **Automatic merging is absent in V1**, following the requested order: stabilize and accept the product, then add E2E tests.
 
-Après validation de la V1 : ajouter une petite suite Playwright incluant l’application de production, rendre son contrôle obligatoire, puis seulement introduire l’auto-merge des PR Dependabot mineures/correctives. L’auto-merge doit s’appuyer sur les protections effectives de branche, et les mises à jour majeures restent revues. Prévoir le passage en échec en cas de test sauté ou annulé ; ne pas traiter un contrôle absent comme un succès.
+After V1 acceptance, add a small Playwright suite covering the production application, require its check, and only then introduce automatic merging of minor/patch Dependabot PRs. Automatic merging must rely on effective branch protections; major updates still require review. Fail when a test is skipped or canceled rather than treating an absent check as success.
 
-Le workflow de release publie une version `X.Y.Z` et un tag `sha-COMMIT` du commit vérifié. Il ne modifie pas les manifests et ne déploie pas le cluster. La variable GitHub `DOCKERHUB_REPOSITORY` et les secrets `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` configurent la publication ; aucun accès OpenShift ne doit être ajouté à GitHub. Conserver le digest et le SBOM joints à la Release dans votre dépôt d’artefacts interne. Valider en dev, puis promouvoir la même image en prod.
+The release workflow publishes version `X.Y.Z` and a `sha-COMMIT` tag from the verified commit. It neither modifies manifests nor deploys the cluster. The GitHub variable `DOCKERHUB_REPOSITORY` and secrets `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` configure publication; do not add OpenShift access to GitHub. Retain the Release's digest and SBOM in your internal artifact repository. Validate in development, then promote the same image to production.
 
-## Vérifications restant à effectuer sur la plateforme cible
+## Remaining checks on the target platform
 
-Les vérifications locales de syntaxe et de rendu ne prouvent ni l’admission par les SCC réelles, ni le téléchargement des images, ni la disponibilité du stockage. Avant de déclarer un environnement prêt : valider le démarrage rootless, les sondes, la Route/certificat, le premier compte, le redémarrage avec persistance, un export/restauration de base et la connexion au Qwen interne. La suite E2E durable sera ajoutée après validation fonctionnelle de la première version.
+Local syntax and rendering checks do not prove admission by actual SCCs, image pulls, or storage availability. Before declaring an environment ready, validate rootless startup, probes, the Route/certificate, first-account setup, restart with persistence, a database backup/restore, and the internal Qwen connection. The maintained E2E suite will be added after functional acceptance of the first version.

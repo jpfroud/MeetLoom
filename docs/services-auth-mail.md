@@ -1,69 +1,69 @@
-# Connexion organisationnelle et courriels internes
+# Organizational sign-in and internal email
 
-OIDC et SMTP sont optionnels. Sans leurs variables, l'application utilise uniquement les comptes locaux et ne contacte aucun fournisseur d'identité ni serveur de courrier. Les tests utilisent des adaptateurs simulés : aucun message réel n'est envoyé pendant le développement.
+OIDC and SMTP are optional. Without their variables, the application uses local accounts only and contacts no identity provider or mail server. Tests use mock adapters: no real messages are sent during development.
 
 ## OIDC
 
-Déclarer un client confidentiel **Authorization Code** dans votre fournisseur interne (par exemple Keycloak). Enregistrer exactement l'URI `${APP_ORIGIN}/api/auth/oidc/callback`, activer PKCE S256 et fournir les claims `sub`, `email`, `email_verified`, `name` avec les scopes `openid email profile`.
+Register a confidential **Authorization Code** client with your internal provider, such as Keycloak. Register the exact URI `${APP_ORIGIN}/api/auth/oidc/callback`, enable PKCE S256, and provide the `sub`, `email`, `email_verified`, and `name` claims with the `openid email profile` scopes.
 
 ```dotenv
 APP_ORIGIN=https://meetloom.internal.example.org
 COOKIE_SECURE=true
 OIDC_ISSUER=https://identity.internal.example.org/realms/organisation
 OIDC_CLIENT_ID=meetloom
-OIDC_CLIENT_SECRET=valeur-secrete-du-client
+OIDC_CLIENT_SECRET=your-private-client-secret
 OIDC_ACCOUNT_POLICY=existing
 ```
 
-`existing` autorise la première liaison seulement lorsque l'e-mail **vérifié par ce fournisseur de confiance** correspond à un compte local existant. Ce choix signifie que l'organisation fait confiance à son fournisseur pour contrôler l'adresse professionnelle ; ne pas configurer un fournisseur public ou un realm autorisant des adresses auto-déclarées. `invited` autorise aussi la création d'un compte lorsqu'une invitation administrateur active correspond à cette adresse. Une invitation d'espace conserve son rôle lors de l'acceptation SSO. Aucun compte créé par SSO ne devient administrateur global. Le premier administrateur doit toujours utiliser l'installation locale.
+`existing` permits initial linking only when the email **verified by this trusted provider** matches an existing local account. This means the organization trusts its provider to control the work email address; do not configure a public provider or a realm allowing self-declared addresses. `invited` also permits account creation when an active administrator invitation matches that address. Workspace invitations retain their role on SSO acceptance. No account created through SSO becomes a global administrator. The first administrator must still use local setup.
 
-Après la liaison, l'identité est le couple `(issuer, sub)` ; un nouveau `sub` ne peut pas reprendre un compte déjà lié via une adresse recyclée. Un compte désactivé reste refusé. La déconnexion ferme la session MeetLoom ; elle ne déconnecte pas toutes les applications du fournisseur. Le secret client reste côté serveur et aucun access/refresh token du fournisseur n'est conservé après connexion.
+After linking, identity is the `(issuer, sub)` pair; a new `sub` cannot take over an already linked account through a recycled address. Disabled accounts remain refused. Sign-out closes the MeetLoom session; it does not sign out of every application connected to the provider. The client secret stays on the server, and no provider access/refresh token is retained after sign-in.
 
-Le flux utilise state et nonce aléatoires, PKCE S256, une liaison au navigateur par cookie HttpOnly/SameSite=Lax, une expiration de dix minutes et une consommation atomique à usage unique. Le cookie de session habituel garde sa protection SameSite=Strict. La bibliothèque [openid-client](https://github.com/panva/openid-client) valide les réponses et les ID tokens ; les connexions au fournisseur exigent HTTPS et des certificats valides. Les certificats internes peuvent être ajoutés avec `NODE_EXTRA_CA_CERTS`, sans désactiver la vérification TLS.
+The flow uses random state and nonce values, PKCE S256, browser binding through an HttpOnly/SameSite=Lax cookie, ten-minute expiry, and atomic single-use consumption. The regular session cookie retains SameSite=Strict protection. The [openid-client](https://github.com/panva/openid-client) library validates responses and ID tokens; provider connections require HTTPS and valid certificates. Internal certificates can be added with `NODE_EXTRA_CA_CERTS`, without disabling TLS verification.
 
-## SMTP et récupération de mot de passe
+## SMTP and password recovery
 
 ```dotenv
 SMTP_HOST=smtp.internal.example.org
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=compte-de-service
-SMTP_PASSWORD=mot-de-passe-secret
+SMTP_USER=service-account
+SMTP_PASSWORD=your-private-password
 SMTP_FROM=meetloom@example.org
 SMTP_SCHEDULED=true
 ```
 
-Avec `SMTP_SECURE=false`, STARTTLS est **obligatoire**, pas opportuniste. Le port 465 utilise normalement `SMTP_SECURE=true`. L'authentification est facultative pour un relais interne qui la gère autrement ; renseigner utilisateur et mot de passe ensemble. Les certificats sont vérifiés et les accès aux fichiers/URL de contenu Nodemailer sont désactivés. Voir le [transport SMTP officiel](https://nodemailer.com/smtp).
+With `SMTP_SECURE=false`, STARTTLS is **required**, not opportunistic. Port 465 normally uses `SMTP_SECURE=true`. Authentication is optional for an internal relay that handles it another way; provide username and password together. Certificates are verified, and Nodemailer file/URL content access is disabled. See the [official SMTP transport documentation](https://nodemailer.com/smtp).
 
-Le lien « Mot de passe oublié » apparaît lorsque SMTP est configuré. La réponse reste identique pour les adresses connues, inconnues, désactivées ou temporairement limitées. Un délai par adresse de quinze minutes et une limite par IP réduisent les envois abusifs. Le lien est valable une heure, à usage unique, et seul son hash est stocké en base. Un échec d'envoi invalide ce lien. Le corps contenant le lien reste en mémoire pendant l'envoi ; il n'est jamais journalisé ni enregistré dans une file persistante. En cas de redémarrage avant envoi, l'utilisateur devra redemander un lien. Une réinitialisation réussie ferme toutes les autres connexions locales du compte.
+The **Forgot password** link appears when SMTP is configured. Its response is identical for known, unknown, disabled, and temporarily rate-limited addresses. A fifteen-minute cooldown per address and an IP rate limit reduce abusive sends. The link is valid for one hour, can be used once, and only its hash is stored in the database. A sending failure invalidates the link. The body containing the link stays in memory during sending; it is never logged or saved in a persistent queue. If the application restarts before sending, the user must request a new link. A successful reset closes all the account's other local sessions.
 
-## Digests et rappels
+## Digests and reminders
 
-Chaque compte choisit explicitement dans son profil les digests et/ou rappels ; les deux préférences sont désactivées par défaut. `SMTP_SCHEDULED=false` désactive uniquement l'ordonnanceur et conserve la récupération de mot de passe.
+Each account explicitly chooses digests and/or reminders in its profile; both preferences are disabled by default. `SMTP_SCHEDULED=false` disables only the scheduler and leaves password recovery available.
 
-L'ordonnanceur intégré examine les tâches toutes les minutes, avec une instance applicative recommandée. Le digest regroupe les notifications non lues des heures terminées, sous forme de titres et liens vers les séances encore accessibles. Il ne copie pas le texte privé des commentaires. Le dernier intervalle traité est conservé en base ; après une interruption, le rattrapage est limité à sept jours.
+The built-in scheduler checks work every minute; a single application instance is recommended. Digests group unread notifications from completed hourly intervals as titles and links to sessions that remain accessible. They do not copy private comment text. The last processed interval is stored in the database; recovery after an interruption is limited to seven days.
 
-Les rappels partent trois jours calendaires avant la première date de la séance, selon son fuseau horaire. Seuls propriétaire et éditeurs (y compris les rôles effectifs d'espace) les reçoivent. Ils résument les tâches ouvertes, le matériel et le nombre de discussions non résolues ; les listes sont limitées à 30 éléments. Ils ne contiennent aucun lien public secret. Séances archivées, accès révoqués et comptes désactivés sont exclus.
+Reminders are sent three calendar days before the session's first date, in its timezone. Only owners and editors receive them, including effective workspace roles. They summarize open tasks, materials, and the number of unresolved discussions; lists are limited to 30 items. They contain no secret public links. Archived sessions, revoked access, and disabled accounts are excluded.
 
-Une clé de livraison persistante et un verrou temporaire évitent les doubles envois usuels ; les erreurs sont retentées au plus trois fois, espacées d'au moins cinq minutes. Comme tout envoi SMTP, un arrêt entre l'acceptation du message par le relais et son acquittement en base peut exceptionnellement produire un doublon. Les journaux ne contiennent ni adresse, ni corps, ni jeton. Référence fonctionnelle des rappels : [documentation SessionLab](https://help.sessionlab.com/en/articles/11786738-stay-prepared-with-pre-session-reminder-emails).
+A persistent delivery key and temporary lock prevent ordinary duplicate sends; failures are retried at most three times, at least five minutes apart. As with any SMTP delivery, stopping between relay acceptance and database acknowledgement can occasionally cause a duplicate. Logs contain no addresses, bodies, or tokens. Functional reminder reference: [SessionLab documentation](https://help.sessionlab.com/en/articles/11786738-stay-prepared-with-pre-session-reminder-emails).
 
 ## OpenShift / Kubernetes
 
-Le Deployment charge facultativement le ConfigMap et le Secret tous deux nommés `meetloom-services`. L'installation de base fonctionne sans eux. Copier et adapter [l'exemple non secret](../k8s/optional/services-config.example.yaml), en retirant les lignes du service non utilisé. Stocker les secrets dans un fichier local exclu de Git, par exemple `.env.services-secrets` :
+The Deployment optionally loads a ConfigMap and Secret, both named `meetloom-services`. The base installation works without them. Copy and adapt the [non-secret example](../k8s/optional/services-config.example.yaml), removing settings for any service you do not use. Store secrets in a local file excluded from Git, such as `.env.services-secrets`:
 
 ```dotenv
-OIDC_CLIENT_SECRET=valeur-privee
-SMTP_USER=compte-de-service
-SMTP_PASSWORD=valeur-privee
+OIDC_CLIENT_SECRET=your-private-value
+SMTP_USER=service-account
+SMTP_PASSWORD=your-private-value
 ```
 
-Après sélection du projet cible, appliquer la configuration et le secret, puis relancer le Deployment :
+After selecting the target project, apply the configuration and secret, then restart the Deployment:
 
 ```sh
-oc apply -f chemin-vers-votre-services-config.yaml
+oc apply -f path-to-your-services-config.yaml
 oc create secret generic meetloom-services --from-env-file=.env.services-secrets --dry-run=client -o yaml | oc apply -f -
 oc rollout restart deployment/meetloom
 oc rollout status deployment/meetloom
 ```
 
-Conserver ces valeurs dans votre gestionnaire de secrets habituel. Aucun accès au cluster ni identifiant SMTP/OIDC n'est requis dans GitHub. Si une politique réseau contrôle les sorties, autoriser les DNS internes, le fournisseur OIDC HTTPS et le relais SMTP. Docker Compose transmet les mêmes variables ; placer un proxy HTTPS devant l'application et adapter `APP_ORIGIN`/`COOKIE_SECURE` avant d'activer ces services en production.
+Keep these values in your usual secret manager. GitHub needs neither cluster access nor SMTP/OIDC credentials. If a network policy controls egress, allow internal DNS, the HTTPS OIDC provider, and the SMTP relay. Docker Compose passes the same variables; place an HTTPS proxy in front of the application and adjust `APP_ORIGIN`/`COOKIE_SECURE` before enabling these services in production.

@@ -1,41 +1,41 @@
-# Organiser, terminer et retrouver ses séances
+# Organize, complete, and recover sessions
 
-## Espaces et accès
+## Workspaces and access
 
-Le sélecteur du tableau de bord permet de voir toutes les séances accessibles, uniquement les séances personnelles, ou un espace de travail. **Créer un espace** vous en rend administrateur. **Gérer** permet de changer son nom, son organisation, son logo et ses membres.
+The dashboard selector shows all accessible sessions, personal sessions only, or one workspace. **Create workspace** makes you its administrator. **Manage** lets you change its name, organization, logo, and members.
 
-Un administrateur d’espace règle les paramètres et les accès. Un éditeur peut créer et modifier les séances de l’espace ; un lecteur peut les consulter. Un membre accède à toutes ses séances. Un invité a uniquement les accès accordés individuellement sur certaines séances. L’onglet **Membres et invités** affiche les séances accessibles à chaque personne et permet de retirer tous ses accès dans cet espace.
+Workspace administrators manage settings and access. Editors can create and edit workspace sessions; viewers can read them. Members can access all sessions in their workspace. Guests have only the access granted individually to selected sessions. The **Members and guests** tab shows the sessions each person can access and lets you remove all their access within that workspace.
 
-Le propriétaire conserve ses droits sur sa séance, même si son rôle dans l’espace change. Pour retirer les accès d’un propriétaire, déplacer ou transférer d’abord les séances qu’il possède. Un espace conserve au moins un administrateur actif. Un compte existant est ajouté directement par son adresse e-mail ; pour un nouveau compte, un lien d’invitation valable 72 heures est généré et doit être transmis à la personne. Aucun message n’est envoyé automatiquement par cette action.
+Owners retain rights to their sessions even if their workspace role changes. To remove an owner's access, first move or transfer the sessions they own. A workspace retains at least one active administrator. An existing account is added directly by email address; for a new account, an invitation link valid for 72 hours is generated and must be shared with the person. This action does not automatically send a message.
 
-L’action **Changer d’espace** d’une séance est réservée à son propriétaire. Elle expose la séance aux membres de sa destination. Les accès individuels et les liens publics existants sont conservés. Un espace doit être vide avant suppression.
+A session's **Change workspace** action is restricted to its owner. It exposes the session to members of its destination. Existing individual access and public links are preserved. A workspace must be empty before deletion.
 
-Les dossiers et sous-dossiers sont persistants, même vides. Choisir l’espace personnel ou un espace d’équipe, puis utiliser les actions dossier dans la barre du tableau. Le renommage déplace aussi les sous-dossiers et le classement de leurs séances ; il conserve l’agenda et les droits, y compris pour une séance clôturée. La suppression est réservée à une arborescence sans séance, archives comprises. Les dossiers personnels appartiennent au compte ; les membres éditeurs et administrateurs gèrent les dossiers d’équipe, les lecteurs les consultent. Les invités ne voient que les chemins des séances qui leur sont accessibles.
+Folders and subfolders persist even when empty. Select personal space or a team workspace, then use folder actions in the dashboard toolbar. Renaming also moves subfolders and updates their sessions' filing; it preserves agendas and permissions, including for closed sessions. Deletion requires a subtree without sessions, including archived sessions. Personal folders belong to the account; editors and administrators manage team folders, while viewers can read them. Guests see only paths belonging to sessions they can access.
 
-Le filtre **Activité** permet de retrouver les séances ouvertes récemment ou les modifications non lues. Le point vert signale une version plus récente que celle consultée par ce compte. Les marqueurs de lecture sont propres à chaque utilisateur ; ouvrir une séance dans un autre compte ne la marque pas lue pour ses collaborateurs.
+The **Activity** filter finds recently opened sessions or unread changes. A green dot indicates a version newer than the one this account viewed. Read markers belong to each user; opening a session under another account does not mark it read for collaborators.
 
-## Réglages des nouvelles séances
+## Defaults for new sessions
 
-Dans **Gérer → Organisation et valeurs par défaut**, choisir les colonnes et leurs visibilités, les catégories, le fuseau et l’heure de début, ainsi que les choix d’export. On peut copier les réglages d’une séance accessible : colonnes et leur disposition, catégories, pages, formulaires, sons et horaires. Préparer les pages ou formulaires dans une séance, puis utiliser cette copie pour les nouvelles séances de l’espace.
+In **Manage → Organization and defaults**, choose columns and visibility, categories, timezone and start time, and export preferences. You can copy settings from an accessible session: columns and layout, categories, pages, forms, sounds, and scheduling. Prepare pages or forms in a session, then copy those settings for new workspace sessions.
 
-Ces réglages s’appliquent uniquement lors de la création. Ils ne modifient pas les séances existantes. Chaque page, formulaire, section et question reçoit de nouveaux identifiants. Les réponses et liens de publication ne sont jamais copiés. Avant d’enregistrer des contenus issus d’une autre séance, vérifier qu’ils conviennent aux membres de l’espace destinataire.
+These settings apply only at creation. They do not modify existing sessions. Every page, form, section, and question receives new identifiers. Responses and publication links are never copied. Before saving content from another session, check that it is suitable for the destination workspace's members.
 
-Le logo est une image PNG, JPEG ou WebP stockée dans l’application ; aucune image distante n’est téléchargée. Les paramètres d’export sont lus à l’ouverture de la fenêtre d’export et restent modifiables pour le document. Un export destiné à l’équipe peut contenir des colonnes internes.
+The logo is a PNG, JPEG, or WebP image stored in the application; no remote image is downloaded. Export settings are read when the export dialog opens and can still be changed for that document. A team export may contain internal columns.
 
-## Clôturer une séance livrée
+## Close a delivered session
 
-Après avoir arrêté le minuteur, ouvrir **Clôturer / supprimer** depuis les actions du tableau ou **État de la séance** dans l’éditeur. Choisir les animateurs parmi les collaborateurs, puis clôturer.
+After stopping the timer, open **Close / delete** from dashboard actions or **Session status** in the editor. Choose facilitators from the collaborators, then close the session.
 
-L’agenda, son minuteur et ses commentaires deviennent non modifiables. Les formulaires n’acceptent plus de réponses. Les liens publics d’agenda restent consultables avec leur périmètre habituel. Le propriétaire, un administrateur de l’espace ou un administrateur de l’application disposant de l’accès à cette séance peut la rouvrir. La duplication d’une séance clôturée crée une nouvelle séance personnelle éditable, sans copier ses liens de partage ni son état de clôture.
+The agenda, timer, and comments become read-only. Forms stop accepting responses. Public agenda links remain readable within their usual scope. The owner, a workspace administrator, or an application administrator who has access to the session can reopen it. Duplicating a closed session creates a new editable personal session without copying sharing links or closure state.
 
-**Rapport des séances** réunit les séances clôturées accessibles au compte connecté. Les filtres portent sur la date de clôture, les animateurs et les étiquettes. Le rapport distingue durée planifiée et durée mesurée par le minuteur ; une séance sans mesure ne contribue pas au total mesuré.
+**Session report** gathers closed sessions accessible to the signed-in account. Filters cover closure date, facilitators, and tags. The report distinguishes planned duration from time measured by the timer; sessions without measurements do not contribute to the measured total.
 
-## Archives, corbeille et récupération
+## Archives, trash, and recovery
 
-L’archivage est un classement. Il ne ferme pas une séance et ne désactive pas ses liens. La **corbeille de séances** masque au contraire la séance pour tous les collaborateurs et rend ses liens d’agenda et de formulaires inaccessibles. Sa restauration est possible pendant **30 jours** par son propriétaire ou un administrateur autorisé. Les membres, les périmètres de partage et la clôture éventuelle sont conservés : restaurer une séance clôturée ne la rouvre pas.
+Archiving is an organizational tool. It neither closes a session nor disables its links. In contrast, **session trash** hides the session from all collaborators and makes its agenda and form links inaccessible. The owner or an authorized administrator can restore it for **30 days**. Membership, sharing scopes, and any closure state are preserved: restoring a closed session does not reopen it.
 
-Après l’échéance, l’API refuse la restauration. Le nettoyage physique est opportuniste, par lots de 25 séances au plus lors de la consultation de la corbeille ou d’une suppression. Les données liées — commentaires, versions, réponses et liens — suivent la suppression définitive. Une sauvegarde externe peut conserver une copie selon sa propre politique de rétention.
+After the deadline, the API rejects restoration. Physical cleanup is opportunistic, in batches of at most 25 sessions when viewing the trash or deleting a session. Related data—comments, versions, responses, and links—is removed with permanent deletion. An external backup may retain a copy according to its own retention policy.
 
-L’onglet **Historique → Éléments supprimés** concerne les éléments d’une séance, avec une rétention de **72 heures**. Un jour, bloc, groupe, page ou formulaire peut être restauré individuellement. Le contenu d’un groupe est conservé ensemble ; un enfant déjà déplacé ailleurs n’est pas dupliqué lors de la restauration. Les contenus réintroduits restent privés lorsque cela est nécessaire, et une publication de formulaire n’est pas réactivée automatiquement.
+The **History → Deleted items** tab covers items within a session, with **72-hour** retention. A day, block, group, page, or form can be restored individually. Group content is retained together; a child already moved elsewhere is not duplicated during restoration. Reintroduced content remains private where necessary, and form publication is not automatically reactivated.
 
-L’historique propose jusqu’à 100 versions automatiques et 100 versions nommées protégées de la rotation automatique. Le journal garde les 1 000 derniers événements. Enregistrer ses modifications avant de créer une version nommée. La restauration d’un jour actif exige d’abord d’arrêter le minuteur ; copier un jour historique en nouveau jour conserve la conduite en cours.
+History supports up to 100 automatic versions and 100 named versions protected from automatic rotation. The log retains the latest 1,000 events. Save changes before creating a named version. Restoring an active day requires stopping the timer first; copying a historical day to a new day preserves the current run.

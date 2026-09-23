@@ -1,15 +1,15 @@
-# Secrets propres à chaque environnement
+# Environment-specific secrets
 
-Les secrets sont volontairement exclus des Kustomizations. L’installateur les crée une seule fois avec des valeurs aléatoires et refuse de remplacer des identifiants existants. Aucun mot de passe de production ni valeur par défaut utilisable n’est versionné ici.
+Secrets are intentionally excluded from Kustomizations. The installer creates them once with random values and refuses to replace existing credentials. No production password or usable default value is committed here.
 
-Pour un provisionnement par le gestionnaire de secrets de l’organisation, créer dans chaque namespace :
+To provision through your organization's secrets manager, create these resources in each namespace:
 
-- `meetloom-database` : clés `POSTGRESQL_USER=meetloom`, `POSTGRESQL_DATABASE=meetloom`, `POSTGRESQL_PASSWORD` aléatoire et `DATABASE_URL` construite avec ces mêmes identifiants. Ajouter l’annotation `meetloom.io/database-mode: bundled`. Pour une base externe : uniquement `DATABASE_URL` et annotation `meetloom.io/database-mode: external`.
-- `meetloom-auth` : clé `BOOTSTRAP_TOKEN` aléatoire, indépendante du mot de passe PostgreSQL.
-- `meetloom-ai` si nécessaire : clé `QWEN_API_KEY`.
+- `meetloom-database`: keys `POSTGRESQL_USER=meetloom`, `POSTGRESQL_DATABASE=meetloom`, a random `POSTGRESQL_PASSWORD`, and `DATABASE_URL` constructed with the same credentials. Add annotation `meetloom.io/database-mode: bundled`. For an external database: only `DATABASE_URL` and annotation `meetloom.io/database-mode: external`.
+- `meetloom-auth`: a random `BOOTSTRAP_TOKEN`, independent of the PostgreSQL password.
+- `meetloom-ai` if needed: key `QWEN_API_KEY`.
 
-Les valeurs sensibles sont des clés `data`/`stringData` de Secrets Kubernetes `Opaque`, jamais des ConfigMaps. L’application utilise un ConfigMap distinct `meetloom-settings` pour `APP_ORIGIN`, `QWEN_BASE_URL` et `QWEN_MODEL`.
+Sensitive values belong in `data`/`stringData` keys of Kubernetes `Opaque` Secrets, never ConfigMaps. The application uses a separate `meetloom-settings` ConfigMap for `APP_ORIGIN`, `QWEN_BASE_URL`, `QWEN_MODEL`, and optional `QWEN_VISION_MODEL`. Optional OIDC/SMTP resources are documented in the installation guide.
 
-Ne pas réutiliser les secrets RetroGemini. Ne pas copier les valeurs dev vers la prod. Conserver les valeurs dans votre gestionnaire de secrets pour pouvoir restaurer les identifiants si une ressource Kubernetes disparaît. Les mots de passe déjà initialisés dans PostgreSQL ne changent pas lors d’une simple mise à jour du Secret.
+Do not reuse RetroGemini secrets or copy development secrets to production. Keep values in your secrets manager so credentials can be restored if a Kubernetes resource disappears. Passwords already initialized in PostgreSQL do not change when the Secret is merely updated.
 
-Voir le [guide d’installation](../../docs/deployment.md) pour le circuit complet.
+See the [installation guide](../../docs/deployment.md) for the complete workflow.

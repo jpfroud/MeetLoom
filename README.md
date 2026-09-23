@@ -1,18 +1,18 @@
 # MeetLoom
 
-Préparer et animer des séances, avec un agenda partagé et des notes qui restent privées. Application libre, auto-hébergeable, en français et en anglais.
+Plan and facilitate sessions with a shared agenda and notes that stay private. A free, self-hosted application in English and French.
 
-**Version 0.1 en recette fonctionnelle.** Les fonctionnalités implémentées sont décrites ci-dessous ; la [matrice de parité](docs/product-parity.md) et les [preuves de recette](docs/manual-qa.md) suivent leur vérification. La validation utilisateur précède les tests E2E maintenus, la première release et le déploiement.
+**Version 0.1 is undergoing functional review.** Implemented features are listed below; the [parity matrix](docs/product-parity.md) and [manual QA evidence](docs/manual-qa.md) track their verification. User acceptance comes before maintained end-to-end tests, the first release, and deployment.
 
 [![CI](https://github.com/jpfroud/MeetLoom/actions/workflows/ci.yml/badge.svg)](https://github.com/jpfroud/MeetLoom/actions/workflows/ci.yml)
 [![Security](https://github.com/jpfroud/MeetLoom/actions/workflows/security.yml/badge.svg)](https://github.com/jpfroud/MeetLoom/actions/workflows/security.yml)
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/jpfroud/MeetLoom)
 
-Le bouton Render prépare une démonstration sur le plan gratuit, **avec des données éphémères** : elles peuvent disparaître au redémarrage ou à la mise en veille. Voir le [guide Render](docs/render.md) pour créer le premier compte et choisir un stockage durable. Pour des agendas internes, utiliser votre propre hébergement.
+The Render button sets up a demo on the free plan **with ephemeral data**: data may disappear when the service restarts or spins down. See the [Render guide](docs/render.md) to create the first account and choose durable storage. Use your own hosting for internal agendas.
 
-## Démarrer en local
+## Run locally
 
-Prérequis : **Node.js 24 LTS** et npm. SQLite est intégré à Node : aucun serveur de base de données n'est nécessaire pour un essai local.
+Requirements: **Node.js 24 LTS** and npm. SQLite is built into Node, so no database server is needed for a local trial.
 
 ```bash
 npm ci
@@ -20,92 +20,92 @@ npm run build
 npm start
 ```
 
-Ouvrir [MeetLoom local](http://127.0.0.1:3000), créer le premier compte, puis choisir **Explorer un exemple**. Aucun compte ni mot de passe de démonstration n'est préinstallé. Les données sont conservées dans `data/meetloom.sqlite`, ignoré par Git.
+Open [MeetLoom locally](http://127.0.0.1:3000), create the first account, then choose **Explore an example**. No demo account or password is preinstalled. Data is stored in `data/meetloom.sqlite`, which Git ignores.
 
-Copier `.env.example` vers `.env` pour adapter la configuration. Le serveur charge ce fichier ; les variables fournies par l'environnement restent prioritaires. En production, `APP_ORIGIN` et une clé `BOOTSTRAP_TOKEN` pour le premier compte sont obligatoires. L'interface demande cette clé à l'installation. Ne jamais exposer un serveur de développement sans authentification initiale sur Internet.
+Copy `.env.example` to `.env` to customize configuration. The server loads this file; variables supplied by the environment take precedence. Production requires `APP_ORIGIN` and a `BOOTSTRAP_TOKEN` for the first account. The installation screen asks for this token. Never expose an uninitialized development server to the Internet.
 
-Pour travailler avec rechargement du code, lancer ces commandes dans deux terminaux :
+For development with code reloading, run these commands in two terminals:
 
 ```bash
 npm run dev
 npm run dev:client
 ```
 
-Ouvrir [le serveur Vite](http://127.0.0.1:5173). Si `APP_ORIGIN` est défini en développement, utiliser exactement cette origine.
+Open [the Vite server](http://127.0.0.1:5173). If `APP_ORIGIN` is set during development, use that exact origin.
 
-## Ce qui est disponible
+## Available features
 
-- Tableau de bord cartes/liste, recherche et tri, activité non lue et séances ouvertes récemment, dossiers/sous-dossiers persistants, duplication et archivage.
-- Espaces avec administrateurs, éditeurs, lecteurs et invités limités à certaines séances ; logo et valeurs par défaut des nouvelles séances, colonnes, catégories, pages, formulaires, sons et exports.
-- Agendas multi-jours ; texte riche, tâches et matériel, catégories, responsables, groupes imbriqués, notes et salles parallèles. Déplacement, duplication, annulation/rétablissement, copie/transfert entre séances et horaires verrouillés avec signalement des chevauchements.
-- Colonnes ordonnables et redimensionnables, disposition de l'heure/durée et de la description, visibilité dans l'éditeur et audience **équipe** ou **équipe & visiteurs**. Les notes de présentation sont privées par défaut.
-- Comptes locaux, profils et préférences, administration, invitations et rôles par séance. Connexion OIDC et récupération par SMTP facultatives ; services désactivés tant qu'ils ne sont pas configurés.
-- Présence, fusion des modifications indépendantes et résolution explicite des conflits, commentaires en fils et mentions. Versions nommées, journal lisible, restauration/copie de jours et récupération des éléments supprimés pendant 72 heures.
-- Pages et formulaires, réponses, exports et synthèse IA facultative. Les liens de publication sont révocables et la confidentialité des réponses est contrôlée côté serveur.
-- Liens visiteurs et agendas simplifiés sans compte, limitables à certains contenus, expirables et révocables. Le serveur supprime les champs privés avant d'envoyer les données. La page publique s'actualise automatiquement.
-- Minuteur partagé : pause, reprise, navigation, prolongation +1/+5, reprise du bloc précédent après passage automatique, progression et avance/retard par rapport aux durées capturées au lancement.
-- Alerte anticipée en minutes ou pourcentage de durée restante, son de fin, choix de son/volume. Réglages par séance et valeurs par défaut pour les nouvelles séances.
-- Fenêtre **Document Picture-in-Picture** dans les navigateurs compatibles ; fenêtre séparée de secours ailleurs. L'affichage contient le titre et le temps, sans notes internes.
-- Clôture des séances, choix des animateurs et rapport filtrable ; corbeille de séances restaurables pendant 30 jours, distincte des archives.
-- IA interne facultative : conversations, instructions d'organisation/espace et propositions sur un contexte choisi, avec validation avant application. Adaptateur compatible OpenAI pour votre serveur Qwen.
-- Exports JSON/CSV/Word/PowerPoint et impression/PDF ; import JSON et extraction documentaire DOCX/PPTX/XLSX/PDF/CSV. L'OCR d'image demande un modèle de vision interne configuré. Les fichiers d'import sont traités temporairement ; ils ne deviennent pas des pièces jointes.
-- [Serveur MCP](docs/mcp.md) avec jetons personnels et permissions de compte pour les clients autorisés.
+- Card and list dashboards, search and sorting, unread activity and recently opened sessions, persistent folders and subfolders, duplication and archiving.
+- Workspaces with administrators, editors, viewers, and guests limited to selected sessions; a logo and defaults for new sessions, columns, categories, pages, forms, sounds, and exports.
+- Multi-day agendas; rich text, tasks and materials, categories, assignees, nested groups, notes, and parallel tracks. Move, duplicate, undo/redo, copy or transfer between sessions, and lock start times with overlap warnings.
+- Reorderable, resizable columns, separate time/duration and description layouts, editor visibility, and **team** or **team & visitors** audiences. Presenter notes are private by default.
+- Local accounts, profiles and preferences, administration, invitations, and session roles. Optional OIDC sign-in and SMTP recovery remain disabled until configured.
+- Presence, merging of independent changes, explicit conflict resolution, threaded comments, and mentions. Named versions, a readable activity log, day restoration/copying, and recovery of deleted items for 72 hours.
+- Pages and forms, responses, exports, and optional AI summaries. Publication links are revocable and response privacy is enforced on the server.
+- Visitor links and simplified agendas without an account, with content restrictions, expiration, and revocation. The server removes private fields before sending data. Public pages refresh automatically.
+- A shared timer: pause, resume, navigation, +1/+5 extensions, recovery of the previous block after automatic advancement, progress, and ahead/behind indicators against durations captured at the start.
+- Advance warnings in minutes or as a percentage of remaining duration, an end sound, sound selection, and volume. Per-session settings and defaults for new sessions.
+- A **Document Picture-in-Picture** window in compatible browsers, with a separate window as a fallback. The display includes the title and timing, without internal notes.
+- Session closure, facilitator selection, and a filterable report; deleted sessions remain recoverable for 30 days in a trash area separate from archives.
+- Optional internal AI: conversations, organization/workspace instructions, and proposals based on a selected context, with review before applying changes. An OpenAI-compatible adapter connects to your Qwen server.
+- JSON/CSV/Word/PowerPoint exports and printing/PDF; JSON import and DOCX/PPTX/XLSX/PDF/CSV extraction. Image OCR requires a configured internal vision model. Imported files are processed temporarily and do not become attachments.
+- An [MCP server](docs/mcp.md) with personal tokens and account permissions for authorized clients.
 
-Le guide [utilisation](docs/user-guide.md) décrit les parcours. Voir aussi [espaces, dossiers, historique et clôture](docs/workspaces-and-lifecycle.md), [IA et imports](docs/ai-and-import.md), [collaboration](docs/collaboration.md) et [OIDC/SMTP](docs/services-auth-mail.md). Le [périmètre et les limites](docs/status.md) distingue le code présent, la recette et la validation utilisateur.
+The [user guide](docs/user-guide.md) describes these workflows. See also [workspaces, folders, history, and closure](docs/workspaces-and-lifecycle.md), [AI and imports](docs/ai-and-import.md), [collaboration](docs/collaboration.md), and [OIDC/SMTP](docs/services-auth-mail.md). The [scope and limitations](docs/status.md) distinguish implemented code, QA, and user acceptance.
 
-## OpenShift, Kubernetes et PostgreSQL
+## OpenShift, Kubernetes, and PostgreSQL
 
-Une image réunit l'interface et l'API. Les manifests génériques dans [k8s](k8s/README.md) prévoient une Route HTTPS, les sondes de santé, les limites de ressources, des secrets stables, PostgreSQL/PVC et un utilisateur arbitraire sans privilège. Les overlays `development` et `production` acceptent le namespace de votre choix.
+One image serves the frontend and API. The generic manifests in [k8s](k8s/README.md) provide an HTTPS Route, health probes, resource limits, stable secrets, PostgreSQL/PVC storage, and an arbitrary unprivileged user. The `development` and `production` overlays accept your chosen namespace.
 
-Le circuit prévu, après validation, est **Release GitHub → image Docker Hub → mise à jour OpenShift par l'opérateur**. Le workflow et les manifests sont préparés ; ils n'ont pas été exécutés sur votre cluster. La [procédure](docs/deployment.md) décrit les secrets, la publication, puis l'installation dans un projet déjà créé :
+After acceptance, the intended workflow is **GitHub Release → Docker Hub image → operator-managed OpenShift update**. The workflow and manifests are prepared; they have not been run on your cluster. The [procedure](docs/deployment.md) covers secrets, publication, and installation into an existing project:
 
 ```powershell
-pwsh ./scripts/deploy-openshift.ps1 -Environment development -Project meetloom-dev -Image docker.io/votre-compte/meetloom:0.1.0
+pwsh ./scripts/deploy-openshift.ps1 -Environment development -Project meetloom-dev -Image docker.io/your-account/meetloom:0.1.0
 ```
 
 ```bash
-MEETLOOM_NAMESPACE=meetloom-dev bash scripts/deploy-openshift.sh development docker.io/votre-compte/meetloom:0.1.0
+MEETLOOM_NAMESPACE=meetloom-dev bash scripts/deploy-openshift.sh development docker.io/your-account/meetloom:0.1.0
 ```
 
-Les scripts sont idempotents, ne suppriment pas le PVC, conservent les secrets et contrôlent la disponibilité. Pour une nouvelle version, changer uniquement l'image du conteneur `app` du Deployment `meetloom`. GitHub ne reçoit aucun accès au cluster. Le [guide de déploiement](docs/deployment.md) détaille installation, publication, mise à jour, retour arrière, Kubernetes sans OpenShift, PostgreSQL externe, registres internes, Qwen et Docker Compose. Voir aussi [exploitation et sauvegardes](docs/operations.md).
+The scripts are idempotent, preserve the PVC and secrets, and check readiness. To update, change only the `app` container image in the `meetloom` Deployment. GitHub receives no cluster access. The [deployment guide](docs/deployment.md) covers installation, publication, upgrades, rollback, Kubernetes without OpenShift, external PostgreSQL, internal registries, Qwen, and Docker Compose. See also [operations and backups](docs/operations.md).
 
-## Brancher Qwen
+## Connect Qwen
 
-Configurer uniquement côté serveur :
+Configure these values on the server only:
 
 ```dotenv
-QWEN_BASE_URL=https://votre-serveur-llm.interne/v1
-QWEN_MODEL=identifiant-exact-du-modele
-QWEN_API_KEY=si-necessaire
+QWEN_BASE_URL=https://your-internal-llm.example/v1
+QWEN_MODEL=exact-model-identifier
+QWEN_API_KEY=if-required
 ```
 
-Le modèle n'est pas figé à un numéro de version. Le serveur appelle `/chat/completions`, valide la réponse, limite sa taille et son délai, puis renvoie un aperçu. Aucun endpoint externe par défaut, aucune clé envoyée au navigateur, aucun agenda appliqué sans action utilisateur. Les colonnes internes ne rejoignent le contexte IA que sur choix explicite. Pour l'OCR, ajouter `QWEN_VISION_MODEL` sur ce même fournisseur interne. Monter le certificat interne via `NODE_EXTRA_CA_CERTS` si nécessaire ; ne pas désactiver TLS.
+The model is not tied to a fixed version number. The server calls `/chat/completions`, validates the response, bounds its size and duration, and returns a preview. There is no default external endpoint, no key sent to the browser, and no agenda applied without user action. Internal columns enter the AI context only when explicitly selected. For OCR, add `QWEN_VISION_MODEL` on the same internal provider. Mount an internal CA through `NODE_EXTRA_CA_CERTS` if needed; do not disable TLS verification.
 
-## Ingénierie et vérification
+## Engineering and verification
 
 ```bash
-npm run check       # TypeScript, tests métier/API et compilation
+npm run check       # TypeScript, domain/API tests, and build
 npm test
 npm audit
 npm run format:check
 ```
 
-`TEST_DATABASE_URL` active les mêmes contrats API sur PostgreSQL, avec un schéma isolé par test. La CI exécute SQLite et PostgreSQL, rend les manifests et contrôle les dépendances. CodeQL et Trivy complètent la surveillance. Les actions GitHub sont épinglées à leurs commits. La publication Docker Hub se déclenche par Release GitHub ou manuellement et refait les contrôles, y compris PostgreSQL, avant publication. La Release conserve le digest, le commit, un SBOM et les manifests d'installation.
+`TEST_DATABASE_URL` runs the same API contracts against PostgreSQL, using an isolated schema per test. CI runs SQLite and PostgreSQL, renders manifests, and checks dependencies. CodeQL and Trivy provide additional scans. GitHub Actions are pinned to commits. Docker Hub publication is triggered by a GitHub Release or manually and repeats checks, including PostgreSQL, before publishing. The Release retains the digest, commit, SBOM, and installation manifests.
 
-**Les tests end-to-end et la fusion automatique des mises à jour attendent la validation de la V1.** Dependabot propose déjà des PR ; aucune fusion automatique ne contourne les vérifications. Le workflow E2E sera défini sur les parcours stabilisés, puis ajouté aux contrôles obligatoires de branche.
+**End-to-end tests and automatic dependency merges await V1 acceptance.** Dependabot already proposes PRs; no automatic merge bypasses verification. The E2E workflow will cover stable user journeys and then become a required branch check.
 
-L'[audit de RetroGemini](docs/engineering-reference.md) explique les pratiques reprises et les différences. L'[étude produit](docs/product-research.md) cite les sources SessionLab/SessionPlan et motive la base neuve. Gstack a été installé en premier, puis utilisé pour les revues ; [outillage Gstack](docs/gstack.md).
+The [RetroGemini audit](docs/engineering-reference.md) explains adopted practices and differences. The [product research](docs/product-research.md) cites SessionLab/SessionPlan sources and explains the fresh implementation. Gstack was installed first and subsequently used for reviews; see [Gstack tooling](docs/gstack.md).
 
-L'[architecture](ARCHITECTURE.md) décrit les modules et leurs limites de confiance. Les [consignes de contribution](CONTRIBUTING.md) expliquent les vérifications SQLite/PostgreSQL et les changements de schéma.
+The [architecture](ARCHITECTURE.md) describes modules and trust boundaries. The [contribution guide](CONTRIBUTING.md) explains SQLite/PostgreSQL checks and schema changes.
 
-## Confidentialité et limites
+## Privacy and limitations
 
-Les visiteurs n'ont jamais accès aux colonnes équipe, commentaires internes, comptes ou versions. Une discussion publique peut être activée séparément sur un lien, sans exposer les échanges internes. Tous les membres autorisés à une séance, y compris les lecteurs, peuvent consulter ses colonnes équipe. Un lien visiteur donne accès à toute personne qui le possède jusqu'à expiration/révocation. Une révocation coupe les prochaines lectures, elle ne peut retirer des données déjà lues ou exportées.
+Visitors cannot access team columns, internal comments, accounts, or versions. A public discussion may be enabled separately on a link without exposing internal conversations. All authorized session members, including viewers, can read its team columns. Anyone possessing a visitor link can access its scope until expiration or revocation. Revocation stops future reads; it cannot retract information already read or exported.
 
-La sauvegarde utilise un contrôle de version et une fusion par identifiant et champ ; les conflits sur un même champ demandent une résolution explicite. Le rafraîchissement périodique ne constitue pas une édition CRDT caractère par caractère. Une instance applicative est prévue. Le minuteur linéaire refuse un jour contenant des salles parallèles : utiliser des séances distinctes pour conduire les salles. Le déploiement réel, votre fournisseur OIDC/SMTP, l'endpoint Qwen et la superposition au-dessus de PowerPoint restent à valider dans votre environnement.
+Saving uses version checks and merging by object identifier and field; conflicting edits to the same field require explicit resolution. Periodic refresh is not character-level CRDT editing. One application instance is supported. The linear timer refuses days containing parallel tracks: use separate sessions to run those tracks. Actual deployment, your OIDC/SMTP provider, Qwen endpoint, and the overlay above PowerPoint still need validation in your environment.
 
-Les fonctionnalités explicitement écartées restent absentes : parking lot, bibliothèque de blocs/sessions et pièces jointes.
+The explicitly excluded features remain absent: parking lot, block/session library, and attachments in blocks.
 
-## Licence
+## License
 
-[Unlicense](LICENSE). Le code de MeetLoom est original. Aucune reprise de code AGPL SessionPlan ni de contenu de bibliothèque SessionLab. Les dépendances conservent leurs licences respectives.
+[Unlicense](LICENSE). MeetLoom code is original. No SessionPlan AGPL code or SessionLab library content has been copied. Dependencies retain their respective licenses.

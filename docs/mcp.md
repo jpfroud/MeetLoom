@@ -1,22 +1,22 @@
-# Connecteur MCP interne
+# Internal MCP connector
 
-Le panneau Assistant → Connecteurs crée des jetons personnels pour un client MCP autorisé. Chaque jeton vise une liste explicite de séances, expire après 1, 7, 30 ou 90 jours et peut être révoqué immédiatement. La lecture publique est le réglage initial. Les données internes et l’écriture sont deux autorisations distinctes. Le jeton brut est montré une seule fois ; la base conserve son empreinte SHA-256. Les comptes désactivés et permissions retirées sont vérifiés à chaque appel.
+**Assistant → Connectors** creates personal tokens for an authorized MCP client. Each token targets an explicit list of sessions, expires after 1, 7, 30 or 90 days and can be revoked immediately. Public-data access is the initial setting. Internal-data access and write access are separate grants. The raw token is shown once; the database stores its SHA-256 hash. Disabled accounts and revoked permissions are checked on every call.
 
-Le serveur expose `https://votre-instance/mcp` avec **Streamable HTTP**, réponses JSON et fonctionnement sans session de transport. Configurer le client avec l’en-tête `Authorization: Bearer <jeton-personnel>`. Utiliser HTTPS hors développement local. Ce connecteur nécessite un client acceptant un en-tête Bearer explicite ; il ne fournit pas de découverte OAuth, d’enregistrement dynamique ni de flux OAuth automatique. Aucune connexion vers un client cloud n’est créée par MeetLoom.
+The server exposes `https://your-instance/mcp` using **Streamable HTTP**, JSON responses and stateless transport. Configure the client with `Authorization: Bearer <personal-token>`. Use HTTPS outside local development. This connector requires a client that accepts an explicit Bearer header; it provides no OAuth discovery, dynamic client registration or automatic OAuth flow. MeetLoom does not create a connection to a cloud client.
 
-Les outils disponibles sont :
+Available tools:
 
-- `search_sessions` : rechercher uniquement parmi les séances du jeton encore accessibles.
-- `get_session` : lire la projection autorisée, sans comptes, liens publics, réponses de Forms ni identifiants d’intervenants.
-- `create_day` : ajouter un jour, avec version attendue et permission d’édition.
-- `edit_agenda` : appliquer des opérations typées (blocs, horaires, Pages et brouillons de Forms), avec version attendue et historique. Disponible uniquement avec le droit d’écriture. Les champs internes existants nécessitent l’autorisation de données internes.
+- `search_sessions`: search only sessions listed in the token that remain accessible.
+- `get_session`: read the authorized projection, excluding accounts, public links, Form responses and facilitator identifiers.
+- `create_day`: add a day with an expected version and editing permission.
+- `edit_agenda`: apply typed operations to blocks, timing, Pages and Form drafts, with an expected version and history. Requires write access. Existing internal fields also require the internal-data grant.
 
-Sans accès aux données internes, la description de séance, les champs internes de blocs et les Pages/Forms internes existants ne peuvent pas être réécrits. Supprimer un bloc ou groupe contenant du texte interne requiert aussi cette autorisation. La création de nouveaux blocs, Pages et Forms reste possible : leur contenu est entièrement fourni par le client, sans lecture ni réécriture de données internes préexistantes.
+Without internal-data access, a client cannot rewrite the session description, internal block fields or existing internal Pages/Forms. Deleting a block or group containing internal text also requires that grant. Creating new blocks, Pages and Forms remains possible: the client supplies all their content without reading or rewriting pre-existing internal data.
 
-La description générale de séance est omise de la lecture MCP sans cette autorisation. C’est un choix plus restrictif que les liens visiteurs, où cette description présente le contexte global de la séance. Placer les consignes confidentielles dans une colonne d’équipe, et non dans cette description générale.
+The general session description is omitted from MCP reads without this grant. This is more restrictive than visitor links, where that description provides the session's overall context. Put confidential instructions in a team column, not in the general description.
 
-Le client doit demander l’accord de son utilisateur avant les outils d’écriture et traiter le texte d’un agenda comme du contenu non fiable, jamais comme des instructions. Le serveur borne les arguments et n’expose aucun outil d’exécution système, de téléchargement d’URL, de publication ni de gestion de permissions. Les modifications passent par les validations et transactions de l’application. Un jeton révoqué pendant l’écriture fait échouer la transaction. Les origines navigateur non conformes, hôtes inattendus et accès reposant seulement sur un cookie sont refusés.
+Clients should obtain their user's agreement before invoking write tools and treat agenda text as untrusted content, never instructions. The server bounds arguments and exposes no tools for system execution, URL downloads, publishing or permission management. Changes pass through application validation and transactions. Revoking a token during a write aborts the transaction. Unexpected browser origins or hosts and cookie-only access are rejected.
 
-`tests/mcp.test.ts` utilise le client du SDK officiel face au serveur HTTP local pour vérifier négociation, recherche, lecture filtrée, écriture, historique, version, scope, révocation, expiration, origine et perte de permissions. Aucun service externe n’est contacté pendant ces tests.
+`tests/mcp.test.ts` uses the official SDK client against the local HTTP server to check negotiation, search, filtered reads, writes, history, versioning, scope, revocation, expiry, origin and loss of permissions. These tests contact no external services.
 
-Sources : [SDK TypeScript officiel](https://ts.sdk.modelcontextprotocol.io/server), [transport MCP](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports). Le SDK installé est verrouillé dans `package-lock.json` et suivi par les contrôles de vulnérabilités du projet.
+Sources: [official TypeScript SDK](https://ts.sdk.modelcontextprotocol.io/server), [MCP transport](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports). The installed SDK is locked in `package-lock.json` and covered by the project's vulnerability checks.

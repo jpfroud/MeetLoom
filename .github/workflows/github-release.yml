@@ -159,7 +159,7 @@ jobs:
           import {writeFileSync} from 'node:fs';
           const {IMAGE, VERSION, DIGEST, GITHUB_SHA} = process.env;
           writeFileSync('meetloom-image.json', JSON.stringify({image: `docker.io/${IMAGE}:${VERSION}`, digest: `docker.io/${IMAGE}@${DIGEST}`, commit: GITHUB_SHA, version: VERSION}, null, 2));
-          writeFileSync('meetloom-release-notes.md', `Image Docker Hub : \`docker.io/${IMAGE}:${VERSION}\`\n\nDigest : \`docker.io/${IMAGE}@${DIGEST}\`\n\nCommit : \`${GITHUB_SHA}\`\n\nLes archives jointes contiennent le guide OpenShift et le SBOM. Le déploiement OpenShift reste une action de l'opérateur.\n`);
+          writeFileSync('meetloom-release-notes.md', `Docker Hub image: \`docker.io/${IMAGE}:${VERSION}\`\n\nDigest: \`docker.io/${IMAGE}@${DIGEST}\`\n\nCommit: \`${GITHUB_SHA}\`\n\nThe attached archives contain the OpenShift guide and SBOM. OpenShift deployment remains an operator action.\n`);
           JS
           cat meetloom-release-notes.md >> "$GITHUB_STEP_SUMMARY"
       - name: Create the GitHub release when dispatched manually

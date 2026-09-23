@@ -1,19 +1,19 @@
-# Contribuer à MeetLoom
+# Contributing to MeetLoom
 
-Utiliser Node.js 24 et `npm ci`, puis suivre le [démarrage local](README.md). Créer une branche `codex/description` ou une branche de travail personnelle et soumettre une PR. Ne pas ajouter de fichiers `.env`, de base SQLite, de dumps, de secrets ou d’agendas privés au dépôt.
+Use Node.js 24 and `npm ci`, then follow [local startup](README.md). Create a `codex/description` branch or your own working branch and submit a PR. Do not commit `.env` files, SQLite databases, dumps, secrets, or private agendas.
 
-Avant une PR, exécuter `npm run check` et formater les fichiers modifiés avec Prettier. Les contrats API doivent continuer à passer sur SQLite et PostgreSQL ; la CI couvre les deux. Pour vérifier localement PostgreSQL, définir `TEST_DATABASE_URL` vers une base de test où l’utilisateur peut créer et supprimer des schémas isolés, puis lancer `npm test`.
+Before opening a PR, run `npm run check` and format changed files with Prettier. API contracts must continue to pass on SQLite and PostgreSQL; CI covers both. To test PostgreSQL locally, set `TEST_DATABASE_URL` to a test database whose user can create and drop isolated schemas, then run `npm test`.
 
-L'[architecture](ARCHITECTURE.md) indique où placer les changements. Réutiliser `tests/support.ts` pour les tests HTTP : ils démarrent une application sur boucle locale, créent des comptes isolés et nettoient leurs ressources. Ne jamais diriger `TEST_DATABASE_URL` vers une base de production. Les changements de schéma sont additives et idempotents ; accompagner une modification de stockage d'une migration compatible et d'un test sur les deux moteurs.
+The [architecture](ARCHITECTURE.md) explains where changes belong. Reuse `tests/support.ts` for HTTP tests: it starts an application on loopback, creates isolated accounts, and cleans up its resources. Never point `TEST_DATABASE_URL` at a production database. Schema changes are additive and idempotent; include a compatible migration and a test on both engines when changing storage.
 
-Les changements d’autorisations, de projection visiteur, de persistance ou de format d’agenda nécessitent des tests métier/API pertinents. Les corrections visuelles se vérifient dans le navigateur. Les tests end-to-end seront introduits après validation de la première version et ne sont pas encore un contrôle disponible.
+Authorization, visitor projection, persistence, or agenda format changes need meaningful domain/API tests. Verify visual changes in a browser. End-to-end tests will be introduced after first-version acceptance and are not an available check yet.
 
-Une écriture d'agenda utilise le contrôle de version central ; une écriture annexe (commentaire, réponse, partage) vérifie aussi la clôture et la corbeille sous verrou transactionnel. Les déplacements entre séances ne doivent jamais réussir à moitié. Tester la révocation d'accès, les identifiants appartenant à une autre séance, les requêtes concurrentes et la confidentialité des données publiques.
+Agenda writes use the central version check; related writes such as comments, responses, and sharing also check closure and trash state under a transactional lock. Transfers between sessions must never succeed partially. Test revoked access, identifiers belonging to other sessions, concurrent requests, and public data privacy.
 
-Les interfaces comportent les libellés FR/EN, un état de chargement, une erreur récupérable et les droits réels du compte. Les modules d'éditeur, d'administration et de formulaires sont chargés selon le parcours ; comparer les tailles de bundles après un ajout important, sans masquer les avertissements du compilateur.
+Interfaces include English and French labels, loading states, recoverable errors, and the account's actual permissions. Editor, administration, and form modules load according to the workflow; compare bundle sizes after substantial additions without hiding build warnings.
 
-Les dépendances passent par Dependabot et les mêmes vérifications que le code. Les actions GitHub restent épinglées à leur SHA. La fusion automatique est désactivée jusqu’à la mise en place des E2E validés et des protections de branche. Pour une vulnérabilité, suivre [SECURITY.md](SECURITY.md).
+Dependencies go through Dependabot and the same checks as application code. GitHub Actions remain pinned to their commit SHA. Automatic merging is disabled until accepted E2E checks and branch protections are in place. Follow [SECURITY.md](SECURITY.md) for vulnerabilities.
 
-Les manifests sont génériques : conserver les namespaces, domaines et registres d’une installation particulière dans son overlay d’exploitation, hors des valeurs distribuées. Une release se prépare en modifiant la version de `package.json` et du lockfile ensemble. La [procédure de publication](docs/deployment.md) décrit Docker Hub, les artefacts et le déploiement manuel par l’opérateur.
+Manifests are generic: keep installation-specific namespaces, domains, and registries in an operational overlay, outside distributed values. Prepare a release by updating the version in `package.json` and the lockfile together. The [publication procedure](docs/deployment.md) covers Docker Hub, artifacts, and manual deployment by the operator.
 
-Dans cette phase, ne pas déclencher de release ou de déploiement : la couverture fonctionnelle et la recette manuelle précèdent la validation utilisateur, puis la suite E2E et la première publication. Le bouton Render est un descripteur d'installation disponible pour l'opérateur ; sa démo gratuite utilise un stockage éphémère.
+Do not trigger a release or deployment during this phase: functional coverage and manual QA precede user acceptance, then the E2E suite and first publication. The Render button is an installation descriptor available to operators; its free demo uses ephemeral storage.

@@ -1,12 +1,12 @@
-## Changement
+## Change
 
-Décrire le problème et le comportement obtenu.
+Describe the problem and resulting behavior.
 
-## Vérification
+## Verification
 
 - [ ] `npm run check`
-- [ ] Confidentialité des liens visiteurs vérifiée si les données/permissions changent
-- [ ] FR et EN vérifiés si l’interface change
-- [ ] Documentation de déploiement mise à jour si une configuration change
+- [ ] Visitor link privacy checked if data or permissions change
+- [ ] English and French checked if the interface changes
+- [ ] Deployment documentation updated if configuration changes
 
-Les E2E seront ajoutés après validation fonctionnelle de la V1.
+E2E tests will be added after functional acceptance of V1.

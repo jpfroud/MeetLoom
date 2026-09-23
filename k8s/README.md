@@ -1,41 +1,41 @@
-# Installation OpenShift
+# OpenShift installation
 
-Le circuit est **Release GitHub → image Docker Hub → mise à jour OpenShift par l’opérateur**. Aucun workflow GitHub ne possède d’accès au cluster et aucun déploiement distant n’est déclenché automatiquement.
+The workflow is **GitHub Release → Docker Hub image → operator-managed OpenShift update**. No GitHub workflow has cluster access, and no remote deployment is triggered automatically.
 
-Les manifests sont indépendants de toute organisation. Les namespaces ci-dessous sont des exemples configurables, pas des valeurs imposées dans les overlays.
+Manifests are independent of any organization. The namespaces below are configurable examples, not values imposed by the overlays.
 
-| Environnement | Namespace       | Overlay                    |
-| ------------- | --------------- | -------------------------- |
-| Développement | `meetloom-dev`  | `k8s/overlays/development` |
-| Production    | `meetloom-prod` | `k8s/overlays/production`  |
+| Environment | Namespace       | Overlay                    |
+| ----------- | --------------- | -------------------------- |
+| Development | `meetloom-dev`  | `k8s/overlays/development` |
+| Production  | `meetloom-prod` | `k8s/overlays/production`  |
 
-Toutes les ressources applicatives sont nommées `meetloom` ou préfixées `meetloom-`, avec leurs propres selectors, secrets et PVC. Elles peuvent cohabiter avec RetroGemini. Les namespaces ne sont ni créés ni supprimés par l’installateur.
+All application resources are named `meetloom` or prefixed with `meetloom-`, with their own selectors, secrets, and PVC. They can coexist with RetroGemini. The installer neither creates nor deletes namespaces.
 
-Après configuration Docker Hub et publication d’une première release, l’opérateur connecté avec `oc login` peut installer :
+After configuring Docker Hub and publishing a first release, an operator signed in through `oc login` can install:
 
 ```powershell
-pwsh ./scripts/deploy-openshift.ps1 -Environment development -Project meetloom-dev -Image docker.io/votre-compte/meetloom:0.1.0
-pwsh ./scripts/deploy-openshift.ps1 -Environment production -Project meetloom-prod -Image docker.io/votre-compte/meetloom:0.1.0
+pwsh ./scripts/deploy-openshift.ps1 -Environment development -Project meetloom-dev -Image docker.io/your-account/meetloom:0.1.0
+pwsh ./scripts/deploy-openshift.ps1 -Environment production -Project meetloom-prod -Image docker.io/your-account/meetloom:0.1.0
 ```
 
-Ou avec Bash :
+Or with Bash:
 
 ```bash
-bash scripts/deploy-openshift.sh development docker.io/votre-compte/meetloom:0.1.0
-MEETLOOM_NAMESPACE=mon-projet bash scripts/deploy-openshift.sh production docker.io/votre-compte/meetloom:0.1.0
+bash scripts/deploy-openshift.sh development docker.io/your-account/meetloom:0.1.0
+MEETLOOM_NAMESPACE=my-project bash scripts/deploy-openshift.sh production docker.io/your-account/meetloom:0.1.0
 ```
 
-Créer d’abord le projet avec `oc new-project` si nécessaire. Les commandes sont à exécuter par l’opérateur, seulement dans l’environnement souhaité. Remplacer `votre-compte/meetloom` par la variable GitHub `DOCKERHUB_REPOSITORY` configurée pour le projet. L’image `your-account/meetloom` de la base est un repère de remplacement, pas la preuve qu’une image publiée existe.
+Create the project first with `oc new-project` if needed. Commands are run by the operator, only in the intended environment. Replace `your-account/meetloom` with the project's configured GitHub variable `DOCKERHUB_REPOSITORY`. The base image `your-account/meetloom` is a placeholder, not evidence that a published image exists.
 
-Les Secrets et le ConfigMap de l’environnement sont créés uniquement s’ils sont absents, hors Kustomization, puis conservés lors des mises à jour. Un PVC existant sans le Secret de sa base fait échouer l’installation : aucun nouveau mot de passe n’est généré pour des données existantes.
+Environment Secrets and the ConfigMap are created only when absent, outside Kustomization, and then preserved during updates. An existing PVC without its database Secret causes installation to fail: no new password is generated for existing data.
 
-Pour une mise à jour ordinaire, changer uniquement l’image du conteneur `app` du Deployment `meetloom` dans la console, ou :
+For an ordinary update, change only the `app` container image in the `meetloom` Deployment through the console, or run:
 
 ```bash
-oc -n meetloom-dev set image deployment/meetloom app=docker.io/votre-compte/meetloom:0.1.1
+oc -n meetloom-dev set image deployment/meetloom app=docker.io/your-account/meetloom:0.1.1
 oc -n meetloom-dev rollout status deployment/meetloom
 ```
 
-Après validation en dev, répéter avec `-n meetloom-prod`. Cette opération ne modifie ni les secrets ni les données. Le retour arrière utilise la même commande avec la version précédente, sous réserve de compatibilité du schéma.
+After validation in development, repeat with `-n meetloom-prod`. This changes neither secrets nor data. Rollback uses the same command with the previous version, subject to schema compatibility.
 
-Le [guide complet](../docs/deployment.md) détaille les secrets GitHub, le premier compte, la publication, les mises à jour, les variantes PostgreSQL/Qwen et le registre interne. Le [guide d’exploitation](../docs/operations.md) couvre les sauvegardes et diagnostics.
+The [complete guide](../docs/deployment.md) covers GitHub secrets, the first account, publication, upgrades, PostgreSQL/Qwen variants, and internal registries. The [operations guide](../docs/operations.md) covers backups and diagnostics.

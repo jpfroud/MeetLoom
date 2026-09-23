@@ -1,51 +1,51 @@
-# Architecture de MeetLoom
+# MeetLoom architecture
 
-Une application Node.js 24 sert l'API Express et l'interface React compilée par Vite. SQLite permet un lancement local sans service supplémentaire ; PostgreSQL est la cible des déploiements durables. La configuration distribuée utilise un pod applicatif. Aucune donnée de séance ne requiert un service cloud externe.
+One Node.js 24 application serves the Express API and the React frontend built by Vite. SQLite supports local startup without another service; PostgreSQL is the target for durable deployments. The distributed configuration uses one application pod. Session data does not require an external cloud service.
 
 ```mermaid
 flowchart LR
-  Browser[React : compte, édition, visiteurs] --> API[Express : origine, identité, permissions]
-  API --> DB[(SQLite local ou PostgreSQL)]
-  API -. contexte choisi .-> AI[Qwen interne facultatif]
-  API -. connexion configurée .-> OIDC[OpenID Connect facultatif]
-  API -. notifications autorisées .-> SMTP[SMTP facultatif]
-  MCP[Client MCP autorisé] --> API
+  Browser[React: accounts, editing, visitors] --> API[Express: origin, identity, permissions]
+  API --> DB[(Local SQLite or PostgreSQL)]
+  API -. selected context .-> AI[Optional internal Qwen]
+  API -. configured sign-in .-> OIDC[Optional OpenID Connect]
+  API -. authorized notifications .-> SMTP[Optional SMTP]
+  MCP[Authorized MCP client] --> API
 ```
 
 ## Modules
 
-| Domaine                 | Emplacement                                                   | Responsabilité                                                                                             |
-| ----------------------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Modèle et métier        | `shared/`                                                     | Arbres de blocs, horaires, minuteur, validation, fusion, projection publique, documents riches et contenus |
-| Assemblage API          | `server/app.ts`                                               | Identité, autorisation effective, sessions, écriture transactionnelle avec contrôle de version             |
-| Stockage                | `server/db.ts`                                                | SQL paramétré commun, transactions PostgreSQL, sérialisation SQLite                                        |
-| Comptes et services     | `accounts.ts`, `oidc.ts`, `mailer.ts`                         | Profils, récupération, révocation, connexion organisationnelle et messages facultatifs                     |
-| Organisation            | `workspaces.ts`, `folders.ts`, `activity.ts`                  | Membres et invités, réglages, dossiers persistants, marqueurs de lecture                                   |
-| Collaboration           | `participants.ts`, `comments.ts`, `presence.ts`, `sharing.ts` | Invitations, mentions, discussions internes/publiques et liens bornés                                      |
-| Mémoire et cycle de vie | `history.ts`, `lifecycle.ts`                                  | Versions, journal, éléments supprimés, clôture et corbeille de séances                                     |
-| Contenus et transferts  | `content-api.ts`, `transfers.ts`                              | Pages, formulaires/réponses et déplacements atomiques entre agendas                                        |
-| IA et imports           | `ai*.ts`, `document-*.ts`                                     | Contexte explicite, réponses structurées validées, extraction temporaire bornée                            |
-| Interface               | `src/`                                                        | Tableau de bord, éditeur, vues publiques et panneaux chargés selon le parcours                             |
-| Déploiement             | `Dockerfile`, `k8s/`, `scripts/`                              | Image rootless, ressources génériques et installation par l'opérateur                                      |
+| Domain                 | Location                                                      | Responsibility                                                                                      |
+| ---------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Model and domain logic | `shared/`                                                     | Block trees, scheduling, timer, validation, merging, public projection, rich documents, and content |
+| API assembly           | `server/app.ts`                                               | Identity, effective authorization, sessions, and transactional writes with version checks           |
+| Storage                | `server/db.ts`                                                | Shared parameterized SQL, PostgreSQL transactions, and SQLite serialization                         |
+| Accounts and services  | `accounts.ts`, `oidc.ts`, `mailer.ts`                         | Profiles, recovery, revocation, organizational sign-in, and optional messages                       |
+| Organization           | `workspaces.ts`, `folders.ts`, `activity.ts`                  | Members and guests, settings, persistent folders, and read markers                                  |
+| Collaboration          | `participants.ts`, `comments.ts`, `presence.ts`, `sharing.ts` | Invitations, mentions, internal/public discussions, and scoped links                                |
+| History and lifecycle  | `history.ts`, `lifecycle.ts`                                  | Versions, activity log, deleted items, closure, and session trash                                   |
+| Content and transfers  | `content-api.ts`, `transfers.ts`                              | Pages, forms/responses, and atomic transfers between agendas                                        |
+| AI and imports         | `ai*.ts`, `document-*.ts`                                     | Explicit context, validated structured responses, and bounded temporary extraction                  |
+| Frontend               | `src/`                                                        | Dashboard, editor, public views, and panels loaded for each workflow                                |
+| Deployment             | `Dockerfile`, `k8s/`, `scripts/`                              | Rootless image, generic resources, and operator-managed installation                                |
 
-## Documents, permissions et transactions
+## Documents, permissions, and transactions
 
-L'agenda est un document JSON versionné. Ses objets ont des identifiants stables ; la validation borne les tailles, la profondeur et les références. La sauvegarde incrémente la version seulement si la version précédente correspond. Historique, mentions et registre des dossiers participent à la même transaction. Une copie ou un déplacement entre agendas régénère les identifiants nécessaires et conserve la confidentialité des champs importés.
+An agenda is a versioned JSON document. Its objects have stable identifiers; validation bounds sizes, depth, and references. Saving increments the version only when the previous version matches. History, mentions, and the folder registry participate in the same transaction. Copying or moving between agendas regenerates the necessary identifiers and preserves imported field privacy.
 
-Les appartenances à un espace et le cycle de vie sont stockés séparément. `workspaceId` et `lifecycle` sont ajoutés aux réponses depuis ces tables, retirés du JSON persistant et exclus des champs modifiables par le navigateur. Les droits effectifs combinent propriété, collaboration explicite et rôle d'espace. Le propriétaire conserve ses droits ; un invité d'espace n'obtient pas les autres séances de cet espace.
+Workspace membership and lifecycle are stored separately. `workspaceId` and `lifecycle` are added to responses from those tables, removed from persistent JSON, and excluded from fields writable by the browser. Effective permissions combine ownership, explicit collaboration, and workspace roles. Owners retain their rights; workspace guests do not gain access to other sessions in that workspace.
 
-Les écritures annexes verrouillent la ligne de séance avant de vérifier clôture/suppression. Cela évite qu'une réponse de formulaire ou un commentaire soit accepté après une clôture concurrente. Les jetons de session, d'invitation, de récupération, de partage et MCP ne doivent jamais être journalisés ; leur stockage suit les mécanismes dédiés de hachage et d'expiration.
+Related writes lock the session row before checking closure/deletion. This prevents a form response or comment from being accepted after a concurrent closure. Session, invitation, recovery, sharing, and MCP tokens must never be logged; their storage follows dedicated hashing and expiration mechanisms.
 
-## Limites de confiance
+## Trust boundaries
 
-Une projection publique est construite explicitement côté serveur. Elle ne transmet ni colonnes d'équipe, ni commentaires internes, ni versions, ni données d'organisation. Les liens peuvent restreindre les contenus autorisés. Les exports pour participants utilisent également une projection avant sérialisation ; les exports d'équipe sont des actions explicites.
+A public projection is explicitly constructed on the server. It excludes team columns, internal comments, versions, and organizational data. Links can restrict permitted content. Participant exports also use a projection before serialization; team exports require explicit action.
 
-Le texte riche est un arbre JSON validé, rendu par une liste de composants React et d'attributs sûrs. L'import n'est pas un stockage de pièces jointes : contenu et temps de traitement sont bornés, les archives et XML non sûrs sont refusés. L'IA reçoit le contexte choisi via un endpoint serveur configuré ; sa sortie devient une proposition validée, jamais une mutation privilégiée libre.
+Rich text is a validated JSON tree rendered through an allowlist of React components and safe attributes. Import is not attachment storage: content size and processing time are bounded, and unsafe archives and XML are rejected. AI receives the selected context through a configured server endpoint; its output becomes a validated proposal, never an unrestricted privileged mutation.
 
-OIDC et SMTP n'existent dans le parcours que s'ils sont configurés. Les tests emploient des adaptateurs locaux simulés ; l'interopérabilité avec les services propres à une installation est une étape de validation distincte.
+OIDC and SMTP appear in user workflows only when configured. Tests use local mock adapters; interoperability with an installation's actual services is a separate validation step.
 
-## Conservation et exploitation
+## Retention and operations
 
-Les éléments supprimés sont récupérables 72 heures ; les séances placées dans la corbeille, 30 jours. Les versions automatiques et nommées ont des limites séparées, et les nettoyages sont bornés. Voir [le guide des espaces et de la récupération](docs/workspaces-and-lifecycle.md) pour les règles exactes, et [l'exploitation](docs/operations.md) pour les sauvegardes.
+Deleted items are recoverable for 72 hours; sessions in the trash for 30 days. Automatic and named versions have separate limits, and cleanup work is bounded. See the [workspace and recovery guide](docs/workspaces-and-lifecycle.md) for exact rules and [operations](docs/operations.md) for backups.
 
-La CI exécute les contrats API sur SQLite et PostgreSQL, compile les deux parties et vérifie les manifests. La release reconstruit le commit choisi, effectue un smoke test sous UID arbitraire/racine en lecture seule, scanne l'image puis publie sur Docker Hub. Le cluster est mis à jour séparément par l'opérateur ; GitHub ne dispose d'aucun identifiant de cluster.
+CI runs API contracts against SQLite and PostgreSQL, builds both parts, and checks manifests. The release workflow rebuilds the selected commit, runs a smoke test with an arbitrary UID and read-only root filesystem, scans the image, and then publishes to Docker Hub. Operators update the cluster separately; GitHub has no cluster credentials.

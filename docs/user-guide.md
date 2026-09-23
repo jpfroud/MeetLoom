@@ -1,80 +1,82 @@
-# Utiliser MeetLoom
+# Use MeetLoom
 
-## Préparer
+## Prepare a session
 
-1. Créer une séance, ou ouvrir l'exemple depuis le tableau de bord. L'exemple est un agenda original modifiable.
-2. Donner un nom et un objectif à la séance. Régler la date, l'heure de début et le fuseau horaire.
-3. Ajouter les blocs. Modifier directement leur titre, durée et description. Les horaires suivants sont recalculés immédiatement.
-4. Ouvrir les détails d'un bloc pour sa section, son intervenant, ses champs et son horaire verrouillé. Une section rassemble les blocs portant le même libellé et peut être repliée.
-5. Déplacer un bloc par sa poignée, ou utiliser les flèches dans les détails. Annuler/rétablir permet de revenir sur les dernières modifications locales.
+1. Create a session or open the example from the dashboard. The example is an original, editable agenda.
+2. Name the session and describe its purpose. Set the date, start time and timezone.
+3. Add blocks. Edit their titles, durations and descriptions directly. Later times update immediately.
+4. Open block details to edit its section, facilitator, fields and locked start time. A section groups blocks with the same label and can be collapsed.
+5. Move a block using its handle or the arrows in its details. Undo/redo restores recent local changes.
 
-Les modifications sont enregistrées automatiquement. Les changements indépendants sont fusionnés ; une modification concurrente du même champ demande une résolution explicite. MeetLoom conserve la copie locale et permet de l'exporter avant de charger la dernière version serveur. Les liens internes, notifications et boutons Précédent/Suivant du navigateur attendent l'enregistrement avant de quitter l'éditeur. En cas de champ invalide, d'erreur réseau ou de conflit, la séance reste ouverte avec un message. Ne pas fermer l'onglet tant qu'une erreur d'enregistrement n'est pas résolue.
+Changes save automatically. Independent changes are merged; concurrent edits to the same field require explicit resolution. MeetLoom preserves the local copy and lets you export it before loading the latest server version. Internal links, notifications and the browser Back/Forward buttons wait for saving before leaving the editor. If a field is invalid, the network fails or a conflict occurs, the session remains open with a message. Do not close the tab while a save error remains unresolved.
 
-### Travailler avec deux agendas
+### Work with two agendas
 
-Ouvrir **Multi Plan**, puis choisir une autre séance accessible et les jours à afficher. Glisser la poignée d'un bloc vers l'autre panneau le déplace ; maintenir **Ctrl** ou **⌘** le copie. Déposer sur un bloc insère avant lui ; déposer en bas ajoute à la fin. Une sélection multiple transfère les blocs sélectionnés ensemble, et un groupe conserve ses enfants.
+Open **Multi Plan**, choose another accessible session and select the days to show. Drag a block handle into the other panel to move it; hold **Ctrl** or **⌘** to copy it. Dropping onto a block inserts before it; dropping at the bottom appends it. Multiple selections transfer together, and groups retain their children.
 
-Les cases à cocher et boutons **Copier les blocs** / **Déplacer les blocs** réalisent les mêmes actions au clavier, dans les deux sens. Une source en lecture seule peut être copiée, mais pas déplacée. Une destination nécessite le droit d'édition. Les modifications des deux agendas sont enregistrées avant le transfert. Si une version a changé, le transfert est refusé sans effectuer un déplacement partiel ; les brouillons non enregistrés restent visibles. L'extraction d'un jour crée une séance distincte, et les champs internes importés restent privés.
+Checkboxes and **Copy blocks** / **Move blocks** provide the same actions from the keyboard in either direction. A read-only source can be copied but not moved. The destination requires editing permission. Both agendas are saved before transfer. If a version has changed, the transfer is rejected without a partial move; unsaved drafts remain visible. Extracting a day creates a separate session, and imported internal fields remain private.
 
-## Choisir les informations partagées
+## Choose what is shared
 
-Le panneau **Colonnes** contient deux réglages indépendants :
+The **Columns** panel has two independent settings:
 
-- **Affichée/masquée** : présence dans l'éditeur de l'équipe.
-- **Équipe/équipe & visiteurs** : audience autorisée par le serveur.
+- **Shown/hidden**: whether the column appears in the team's editor.
+- **Team/team & visitors**: its server-enforced audience.
 
-Une colonne masquée dans l'éditeur peut rester publique. Pour protéger son contenu, choisir **Équipe uniquement**. Les notes de présentation utilisent ce réglage par défaut. Le titre, la section, les horaires et la description générale de la séance sont toujours dans l'agenda visiteur ; ne pas y placer de notes confidentielles.
+A column hidden in the editor can still be public. Choose **Team only** to protect its contents. Presentation notes use this setting by default. The title, section, times and general session description are public context in authorized visitor agendas; do not put confidential notes there.
 
-Les nouvelles séances préparent aussi Informations supplémentaires, Objectifs, Matériel, Instructions et Contexte. Ces colonnes sont internes et masquées par défaut ; les afficher dans **Colonnes** selon les besoins. La colonne Matériel alimente la vue de préparation correspondante.
+New sessions also prepare Additional information, Objectives, Materials, Instructions and Context. These columns are internal and hidden by default; enable them in **Columns** as needed. The Materials column feeds the corresponding preparation view.
 
-Le connecteur MCP applique une précaution supplémentaire : même cette description générale n’est envoyée au client MCP qu’avec l’autorisation explicite de données internes. Un lien visiteur et un jeton MCP n’ont donc pas exactement la même projection. Les noms d’intervenants peuvent être publics si leur colonne l’est ; leurs identifiants de compte, e-mails et avatars restent internes.
+MCP applies an additional precaution: even the general session description is sent to an MCP client only with an explicit internal-data grant. Visitor links and MCP tokens therefore do not have identical projections. Facilitator names can be public when their column is public; account identifiers, email addresses and avatars remain internal.
 
-Les membres autorisés à cette séance voient les colonnes équipe. Les rôles :
+Authorized session members can read team columns. Roles:
 
-| Rôle                 | Lire les notes équipe | Modifier l'agenda | Piloter le minuteur | Gérer les accès |
-| -------------------- | --------------------- | ----------------- | ------------------- | --------------- |
-| Propriétaire         | Oui                   | Oui               | Oui                 | Oui             |
-| Éditeur              | Oui                   | Oui               | Oui                 | Non             |
-| Animateur            | Oui                   | Non               | Oui                 | Non             |
-| Lecteur              | Oui                   | Non               | Non                 | Non             |
-| Visiteur sans compte | Non                   | Non               | Non                 | Non             |
+| Role                       | Read team notes | Edit agenda | Control timer | Manage access |
+| -------------------------- | --------------- | ----------- | ------------- | ------------- |
+| Owner                      | Yes             | Yes         | Yes           | Yes           |
+| Editor                     | Yes             | Yes         | Yes           | No            |
+| Facilitator                | Yes             | No          | Yes           | No            |
+| Viewer                     | Yes             | No          | No            | No            |
+| Visitor without an account | No              | No          | No            | No            |
 
-Depuis **Partager**, le propriétaire peut générer un lien, fixer sa date d'expiration et le révoquer. Copier le lien lors de sa création : le serveur ne conserve que son empreinte. Son aperçu utilise exactement la page visiteur. Après révocation, un navigateur qui le consultait efface l'agenda lors du prochain rafraîchissement.
+From **Share**, the owner can generate a link, set its expiry and revoke it. Copy the link when it is created: the server stores only its hash. Its preview uses the actual visitor page. After revocation, a browser viewing it clears the agenda on the next refresh.
 
-L'administrateur crée les invitations de compte dans **Mon compte & équipe**. Transmettre le lien à son destinataire par votre canal interne habituel. Il est à usage unique et expire après 72 heures. Une fois le compte créé, le propriétaire peut l'ajouter à une séance avec le rôle souhaité.
+Administrators create account invitations in **My account & team**. Send an invitation through your normal internal channel. It is single-use and expires after 72 hours. Once the account exists, the owner can add it to a session with the appropriate role.
 
-## Animer
+## Run a session
 
-Choisir le jour, puis **Animer la séance**. Le minuteur conserve ses horodatages sur le serveur : recharger l'onglet ne le remet pas à zéro. Pause, reprise, bloc suivant/précédent et prolongation sont partagés avec les autres vues. Les mises à jour réseau ont une latence pouvant atteindre environ trois secondes.
+Choose the day, then **Run session**. Timer timestamps are stored on the server, so reloading the tab does not reset it. Pause, resume, previous/next block and extensions are shared across views. Network updates can lag by approximately three seconds.
 
-Les durées prévues au lancement sont conservées pour calculer l'avance/retard. Le point de référence est le démarrage effectif ; démarrer à 10 h un agenda préparé pour 9 h ne crée pas automatiquement une heure de retard. Une pause compte dans le décalage de la séance. Une prolongation ajuste le temps restant sans effacer le dépassement par rapport à la durée initiale.
+Durations planned at startup are retained to calculate schedule deviation. The default reference is the actual start: starting at 10:00 for an agenda planned at 09:00 does not automatically add an hour of delay. Pauses count toward session delay. Extensions adjust remaining time without erasing the overrun against the initial duration.
 
-Le bloc vient de passer automatiquement alors que la discussion continue ? Augmenter sa durée dans l'agenda, ou utiliser **+1 min au précédent** / **+5 min au précédent**. Si cette nouvelle durée couvre encore le moment actuel, le minuteur reprend ce bloc avec le temps déjà écoulé. Sinon, le temps du bloc courant est ajusté. Une pause reste une pause ; le retard par rapport au plan initial est conservé. Cette reprise concerne le dernier passage automatique et disparaît après une navigation manuelle ou un arrêt explicite. Le principe reprend le [comportement documenté du Time Tracker](https://help.sessionlab.com/en/articles/6103716-time-tracker-track-your-session-timing).
+Did the timer advance automatically while discussion was still going? Increase the preceding block's duration in the agenda, or use **+1 min to previous** / **+5 min to previous**. If its new duration still covers the current moment, the timer returns to it with elapsed time preserved. Otherwise, timing of the current block is adjusted. A pause stays paused, and delay against the original plan is retained. Recovery applies to the last automatic transition and ends after manual navigation or an explicit stop. This follows the [documented Time Tracker behavior](https://help.sessionlab.com/en/articles/6103716-time-tracker-track-your-session-timing).
 
-Les horaires verrouillés servent à préparer l'agenda et signaler ses conflits. Le passage automatique enchaîne les activités sans attendre un trou entre deux horaires verrouillés. Pour réserver ce temps en animation, ajouter un bloc de pause explicite ou mettre le minuteur en pause.
+Locked times help plan the agenda and identify conflicts. Automatic advancement runs activities consecutively without waiting through gaps between locked times. Add an explicit break block or pause the timer to reserve that time during delivery.
 
-## Sons
+The progress bar turns orange at 20% remaining and red at 5%. The active minimap segment shows progress as well. These visual thresholds are independent of the sound setting below.
 
-**Alertes sonores & paramètres** permet de choisir le seuil anticipé en minutes ou en pourcentage de la durée du bloc, le son de fin, le timbre et le volume. Un seuil de 20 % pour un bloc de 10 minutes déclenche le rappel lorsqu'il reste 2 minutes. Un seuil de 2 minutes n'est pas joué au démarrage d'un bloc d'une minute.
+## Sounds
 
-Les réglages de la séance s'appliquent à tous ses blocs. L'administrateur peut aussi les définir comme valeurs par défaut des nouvelles séances. Chaque appareil décide d'activer son audio : le clic de démarrage le permet pour le navigateur conducteur, les autres comptes doivent cliquer sur l'icône de son. Les visiteurs ne jouent pas de son. Les restrictions de lecture automatique et la mise en veille de l'ordinateur peuvent empêcher une alerte sonore : utiliser le bouton d'écoute avant la séance.
+Sound settings let you choose an early warning in minutes or as a percentage of block duration, an end sound, tone and volume. A 20% threshold for a ten-minute block warns with two minutes remaining. A two-minute threshold does not play immediately when a one-minute block starts.
 
-## Afficher le temps pendant un PowerPoint
+Session settings apply to all its blocks. Administrators can also set defaults for new sessions. Each device chooses whether to enable audio: clicking Start enables it for the controlling browser; other accounts must click the sound icon. Visitors do not play sounds. Autoplay restrictions and computer sleep can prevent an alert, so use the preview button before the session.
 
-Le bouton **Fenêtre au premier plan** ouvre une fenêtre Document Picture-in-Picture quand Chrome/Edge de bureau le propose. Elle contient le bloc actuel, le compte à rebours et la progression. La déplacer sur l'écran de présentation ; laisser l'onglet MeetLoom ouvert.
+## Show timing during PowerPoint
 
-Si le navigateur ne dispose pas de cette API, MeetLoom ouvre une fenêtre séparée et indique qu'il ne peut garantir sa priorité. Sur Windows, PowerToys Always On Top peut l'épingler (`Win+Ctrl+T`). Vérifier le comportement avec votre mode PowerPoint plein écran et vos écrans avant une séance réelle. En visioconférence, partager une seule fenêtre PowerPoint peut exclure la barre ; partager l'écran approprié si vous voulez montrer les deux.
+The **Always-on-top window** control opens Document Picture-in-Picture when supported by desktop Chrome or Edge. It shows the current block, countdown and progress. Move it onto the presentation screen and keep the MeetLoom tab open.
 
-## IA, exports et historique
+When the API is unavailable, MeetLoom opens a separate window and explains that it cannot guarantee priority. On Windows, PowerToys Always On Top can pin it (`Win+Ctrl+T`). Test your PowerPoint full-screen mode and monitor setup before a real session. In a video call, sharing only the PowerPoint window can exclude the timer; share the appropriate screen if both must be visible.
 
-Les formulaires proposent aussi une question **Image**. Une personne peut y déposer PNG, JPEG ou WebP : le navigateur réduit le fichier et retire ses métadonnées avant envoi. Les images reçues sont visibles uniquement dans le détail des réponses pour les propriétaires et éditeurs. Elles ne sont envoyées ni à la synthèse IA ni dans le CSV. En mode anonyme, éviter les photos qui identifient leur auteur. La limite après réduction est de 256 Kio par image et de 512 Kio par réponse.
+## AI, exports and history
 
-Le panneau **Assistant** conserve des conversations privées. Choisir le contexte : aucun, séance ouverte, séances précises, espace courant ou tous les espaces accessibles. L’inclusion des notes et Pages internes est un choix explicite. L’IA propose des modifications de blocs, dates, Pages et formulaires ; relire l’aperçu puis appliquer ou rejeter. Les autres séances servent de référence, seule la séance ouverte peut être modifiée. Une proposition devenue obsolète ne peut pas écraser une version plus récente. Les réglages personnels et jeux de consignes de l’organisation ou de l’espace orientent les réponses. Sans modèle Qwen configuré, ces commandes restent indisponibles. Voir [IA interne et import documentaire](ai-and-import.md).
+Forms also offer an **Image** question. Respondents can select PNG, JPEG or WebP; the browser reduces the file and removes its metadata before upload. Received images are visible only in response details for owners and editors. They are not sent to AI summaries or included in CSV. In anonymous mode, avoid photos that identify their author. After resizing, limits are 256 KiB per image and 512 KiB per response.
 
-Dans **Exporter**, sélectionner l’audience Public ou Équipe, les jours, colonnes, Pages, blocs et catégories. Vérifier l’aperçu puis produire un PDF avec le dialogue d’impression, un Word modifiable, un PowerPoint ou un CSV. Les horaires d’origine sont conservés même lorsque des blocs sont filtrés. Les documents publics excluent les champs internes. Les sauvegardes JSON de la séance complète contiennent, elles, les données d’équipe.
+The **Assistant** panel keeps private conversations. Choose no context, the open session, specific sessions, the current workspace or all accessible workspaces. Including internal notes and Pages is explicit. AI proposes changes to blocks, dates, Pages and forms; review the preview, then apply or reject. Other sessions are references; only the open session can be changed. An outdated proposal cannot overwrite a newer version. Personal settings and organization/workspace instruction sets guide responses. These commands remain unavailable until Qwen is configured. See [Internal AI and document import](ai-and-import.md).
 
-Régler papier, orientation, police, disposition, légende, matériel et sauts de page ; enregistrer, mettre à jour ou renommer un préréglage personnel. Pour PowerPoint, choisir et réordonner les diapositives, modifier leurs titres et choisir les champs placés dans les notes du présentateur. Un formulaire déjà publié peut être ajouté avec son QR et un lien révocable limité à ce formulaire. **Copier le tableau** fournit un contenu structuré à coller dans un tableur. L’IA interne peut proposer des réglages ou un plan de diapositives, toujours à relire avant application. Voir [Exporter une séance](exports.md), notamment les limites de pagination entre navigateurs et Word.
+In **Export**, select Public or Team, days, columns, Pages, blocks and categories. Review the preview, then create a PDF using the print dialog, an editable Word document, PowerPoint or CSV. Original times are retained even when blocks are filtered out. Public documents exclude internal fields. Full-session JSON backups contain team data.
 
-**Importer** accepte JSON MeetLoom, DOCX, PPTX, XLSX, PDF textuel, CSV/TSV et TXT/Markdown UTF-8. Un modèle de vision interne configuré permet aussi PNG/JPEG. Choisir la correspondance des colonnes du tableau ou proposer une structuration par l’IA, puis corriger les titres, durées et descriptions dans l’aperçu. Seule l’action d’ajout fusionne les nouveaux jours, avec de nouveaux identifiants. Les champs privés du fichier restent privés même si les colonnes de destination étaient publiques. Aucun document source n’est conservé comme pièce jointe. Les limites de taille et de traitement sont indiquées dans le [guide d’import](ai-and-import.md).
+Set paper, orientation, font, layout, legend, materials and page breaks; save, update or rename a personal preset. For PowerPoint, choose and reorder slides, edit titles and select fields for speaker notes. An already published form can be added with its QR and a revocable link limited to that form. **Copy table** provides structured content for a spreadsheet. Internal AI can propose settings or a slide outline for review before application. See [Export a session](exports.md), including pagination differences between browsers and Word.
 
-L'historique permet de restaurer une version, restaurer un jour ou le copier comme nouveau jour. Une restauration complète ou du jour actif exige d'abord d'arrêter le minuteur ; copier un jour historique conserve la conduite en cours. Voir [la récupération et les versions](workspaces-and-lifecycle.md).
+**Import** accepts MeetLoom JSON, DOCX, PPTX, XLSX, text-bearing PDF, CSV/TSV and UTF-8 TXT/Markdown. A configured internal vision model also supports PNG/JPEG. Map table columns or request an AI structure, then correct titles, durations and descriptions in the preview. Only the add action merges new days with fresh identifiers. Private fields in the file remain private even if destination columns are public. No source document is retained as an attachment. Size and processing limits are listed in the [import guide](ai-and-import.md).
+
+History can restore a version, restore a day or copy it as a new day. Restoring an entire session or the active day requires stopping the timer first; copying a historical day preserves ongoing delivery. See [recovery and versions](workspaces-and-lifecycle.md).
