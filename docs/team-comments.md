@@ -1,0 +1,15 @@
+# Conversations privées et notifications
+
+Chaque collaborateur authentifié (propriétaire, éditeur, animateur ou lecteur) peut démarrer une discussion générale ou rattachée à un bloc, répondre et résoudre/rouvrir le fil. La résolution vérifie une révision pour éviter de masquer une réponse arrivée simultanément. Les commentaires visiteurs utilisent un stockage et des routes séparés ; aucune discussion privée ne passe dans un lien public.
+
+Le panneau propose les discussions ouvertes, résolues ou toutes, triées par activité ou ordre de l’agenda. Les badges comptent les commentaires des fils ouverts. La liste charge 20 fils à la fois, avec le message initial et les 15 réponses les plus récentes ; « Voir toutes les réponses » charge le fil complet. Un fil contient au plus 500 messages et une séance 10 000 fils. Les anciens commentaires deviennent des fils indépendants lors de la migration, sans modification du texte.
+
+Dans un commentaire, saisir `@` puis choisir un collaborateur. Dans un champ riche de bloc, saisir `@` ou utiliser le bouton correspondant de la barre d’outils. La mention stocke l’identifiant du compte, pas seulement son nom. Seuls les membres actuels de la séance sont proposés et peuvent recevoir une notification. Une identité provenant d’un document importé qui n’est pas membre n’est jamais notifiée.
+
+La cloche contient les nouveaux commentaires/réponses, mentions et tâches terminées qui mentionnent un compte. Elle ouvre la séance et le commentaire/bloc concernés. L’auteur n’est pas notifié de sa propre action. Les modifications de blocs produisent leurs notifications dans la même transaction que la sauvegarde ; une version refusée n’en produit aucune. Une seule notification de fin de tâche par bloc et destinataire est produite lorsqu’une sauvegarde augmente son nombre de tâches terminées ; plusieurs cases cochées dans la même sauvegarde sont regroupées.
+
+Les notifications ne contiennent pas de copie du texte des commentaires. L’accès à la séance est revérifié à chaque lecture de la boîte : retirer un membre lui retire immédiatement l’accès aux notifications de cette séance. La préférence « mentions dans l’application » masque les mentions et fins de tâches, tout en conservant le stockage pour une réactivation. Les commentaires/réponses ordinaires restent visibles. La boîte conserve 1 000 événements par compte et affiche les 100 plus récents ; « tout marquer comme lu » s’applique à toute la boîte.
+
+Les notifications internes fonctionnent sans service externe. Un service SMTP facultatif permet les résumés et rappels par e-mail lorsque l’administrateur l’a configuré et que le compte a activé ces préférences. Voir la [configuration de l’authentification et des e-mails](services-auth-mail.md). Les tests utilisent un transport simulé et n’envoient aucun message réel.
+
+Références fonctionnelles : [discussions SessionLab](https://help.sessionlab.com/en/articles/4473078-add-and-reply-to-comments-from-collaborators), [mentions et notifications SessionLab](https://help.sessionlab.com/en/articles/8930976-tagging-collaborators-and-in-app-notifications).

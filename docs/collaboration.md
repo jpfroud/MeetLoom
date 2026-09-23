@@ -1,0 +1,11 @@
+# Collaboration et présence
+
+Les écritures d’agenda restent protégées par la version SQL attendue. Chaque éditeur conserve sa dernière version serveur comme référence et compare cette version, son brouillon et la nouvelle version distante. Les modifications de champs indépendants sont fusionnées automatiquement, y compris à l’intérieur des groupes et salles. Les tableaux d’objets utilisent leurs identifiants, jamais leur position.
+
+Les ajouts indépendants et réordonnancements compatibles sont conservés. Deux modifications différentes du même champ, une suppression concurrente avec une modification, des identifiants incompatibles ou un ordre contradictoire produisent un conflit explicite. Le brouillon local reste intact ; il peut être exporté avant de charger la version distante. Les champs de texte riche sont des unités de modification : il ne s’agit pas d’une fusion caractère par caractère. Déplacer un bloc entre deux groupes pendant qu’une autre personne modifie ce même bloc peut également demander une résolution explicite.
+
+Le client tente au maximum deux recalages automatiques après un conflit de version lors d’un même enregistrement. Une connexion défaillante ou un agenda modifié en continu n’entraîne donc pas de boucle illimitée. Les commandes du minuteur conservent leur révision stricte et ne sont jamais rejouées automatiquement.
+
+La présence provient d’un signal envoyé toutes les dix secondes par les fenêtres visibles. Un signal expire après trente secondes ; la fermeture, la navigation ou le passage en arrière-plan demandent aussi sa suppression. Plusieurs fenêtres d’une personne sont regroupées. Une erreur de connexion masque la présence plutôt que d’afficher une activité supposée. Le serveur vérifie les droits sur chaque appel, puis les membres actuels avant d’afficher les noms ; le retrait d’un membre est immédiatement pris en compte. Les adresses e-mail et le contenu des champs ne sont jamais transmis par cette API.
+
+Cette présence est éphémère, en mémoire, limitée à vingt fenêtres par utilisateur et cinq mille fenêtres au total. Elle correspond au déploiement à une seule réplique prévu actuellement. Un déploiement à plusieurs répliques devra partager cet état, par exemple via Redis, avant de prétendre refléter la présence de tous les collaborateurs.
