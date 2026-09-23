@@ -801,32 +801,32 @@ export default function ExportPanel({
                 </p>
               </div>
             )}
-            <button
-              className="button secondary"
-              onClick={() =>
-                void copyExportTable(result, locale)
-                  .then(() =>
-                    setNotice(
-                      t(
-                        "Tableau copié : collez-le dans Word, Excel ou un message.",
-                        "Table copied: paste it into Word, Excel or a message.",
-                      ),
-                    ),
-                  )
-                  .catch(() =>
-                    setError(
-                      t(
-                        "Copie refusée par le navigateur. Utilisez l’export Word ou CSV.",
-                        "Browser clipboard access was denied. Use Word or CSV export.",
-                      ),
-                    ),
-                  )
-              }
-            >
-              <Copy size={16} />
-              {t("Copier le tableau", "Copy table")}
-            </button>
           </details>
+          <button
+            className="button secondary"
+            onClick={() =>
+              void copyExportTable(result, locale)
+                .then(() =>
+                  setNotice(
+                    t(
+                      "Tableau copié : collez-le dans Word, Excel ou un message.",
+                      "Table copied: paste it into Word, Excel or a message.",
+                    ),
+                  ),
+                )
+                .catch(() =>
+                  setError(
+                    t(
+                      "Copie refusée par le navigateur. Utilisez l’export Word ou CSV.",
+                      "Browser clipboard access was denied. Use Word or CSV export.",
+                    ),
+                  ),
+                )
+            }
+          >
+            <Copy size={16} />
+            {t("Copier le tableau", "Copy table")}
+          </button>
           <ExportAiTools
             sessionId={session.id}
             enabled={aiEnabled}

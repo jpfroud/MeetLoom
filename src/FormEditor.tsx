@@ -247,8 +247,8 @@ export default function FormEditor({
         </div>
         <span className="content-status">
           {publication?.enabled
-            ? t("Publié", "Published")
-            : t("Brouillon", "Draft")}
+            ? t("Version publiée disponible", "Published version available")
+            : t("Version de travail", "Working version")}
         </span>
       </div>
       <nav
